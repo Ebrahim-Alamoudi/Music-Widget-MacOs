@@ -165,7 +165,7 @@ final class PlayerHub {
         }
         Task {
             await target.perform(action, current: current)
-            WidgetCenter.shared.reloadAllTimelines()
+            reloadWidgets()
             // Browsers and speakers take a moment to apply commands.
             for delay in [0.3, 1.2] {
                 try? await Task.sleep(for: .seconds(delay))
@@ -190,7 +190,7 @@ final class PlayerHub {
             }
             volumeTask = nil
             SharedStore.nowPlaying = nowPlaying
-            WidgetCenter.shared.reloadAllTimelines()
+            reloadWidgets()
         }
     }
 
@@ -350,7 +350,14 @@ final class PlayerHub {
             || np.volume != old.volume
         nowPlaying = np
         SharedStore.nowPlaying = np
-        if widgetsNeedReload { WidgetCenter.shared.reloadAllTimelines() }
+        if widgetsNeedReload {
+            if trackChanged, !np.isEmpty, artwork == nil {
+                // Wait for the cover so the widget redraws once, with artwork.
+                waitForArtworkThenReload(trackID: np.trackID)
+            } else {
+                reloadWidgets()
+            }
+        }
         NowPlayingPublisher.update(np, artwork: artwork)
         // Warm the queue in the background so opening it is instant (Spotify has none to fetch).
         if trackChanged, !np.isEmpty, np.source != .spotify {
@@ -396,6 +403,36 @@ final class PlayerHub {
         return image
     }
 
+    // MARK: Widget reloads
+
+    @ObservationIgnored private var reloadTask: Task<Void, Never>?
+    @ObservationIgnored private var artworkWaitID: String?
+
+    /// macOS limits how often a background app may reload widgets, so bursts are merged into one.
+    func reloadWidgets() {
+        reloadTask?.cancel()
+        reloadTask = Task {
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else { return }
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
+    private func waitForArtworkThenReload(trackID: String) {
+        artworkWaitID = trackID
+        Task {
+            try? await Task.sleep(for: .seconds(4))
+            // No cover after 4 seconds: show the song anyway.
+            finishArtworkWait(for: trackID)
+        }
+    }
+
+    private func finishArtworkWait(for trackID: String) {
+        guard artworkWaitID == trackID else { return }
+        artworkWaitID = nil
+        reloadWidgets()
+    }
+
     // MARK: Artwork
 
     private func loadArtwork(_ source: ArtworkSource?, for np: NowPlaying) {
@@ -414,10 +451,13 @@ final class PlayerHub {
             if data.flatMap(NSImage.init(data:)) == nil {
                 data = await ITunesSearch.artwork(artist: np.artist, album: np.album, title: np.title)
             }
-            guard let data, let image = NSImage(data: data), nowPlaying.trackID == id else { return }
+            guard let data, let image = NSImage(data: data), nowPlaying.trackID == id else {
+                if nowPlaying.trackID == id { finishArtworkWait(for: id) }
+                return
+            }
             adopt(image, id: id)
             SharedStore.nowPlaying = nowPlaying
-            WidgetCenter.shared.reloadAllTimelines()
+            finishArtworkWait(for: id)
         }
     }
 
