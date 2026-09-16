@@ -409,6 +409,8 @@ private struct GeneralSection: View {
     @AppStorage("miniPinned") private var miniPinned = true
     @AppStorage("hideDockIcon") private var hideDockIcon = false
     @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
+    @AppStorage("albumWallpaper") private var albumWallpaper = false
+    @AppStorage("publishNowPlaying") private var publishNowPlaying = true
 
     var body: some View {
         Section {
@@ -424,11 +426,20 @@ private struct GeneralSection: View {
                     NSApp.setActivationPolicy(hide ? .accessory : .regular)
                     if hide { WindowManager.showMain() }
                 }
-            LabeledContent("Widgets not updating?") {
-                Button("Refresh") {
-                    Task { await hub.refresh() }
-                    WidgetCenter.shared.reloadAllTimelines()
+            Toggle("Album art wallpaper", isOn: $albumWallpaper)
+                .onChange(of: albumWallpaper) { _, enabled in AlbumWallpaper.shared.setEnabled(enabled) }
+                .help("Uses the current cover as your desktop and lock screen wallpaper. Your own wallpaper comes back when you turn this off or quit.")
+            Toggle("Show Sonos in Control Center", isOn: $publishNowPlaying)
+                .onChange(of: publishNowPlaying) { _, _ in
+                    NowPlayingPublisher.update(hub.nowPlaying, artwork: hub.artwork)
                 }
+                .help("Adds Sonos playback to macOS Now Playing (Control Center and, where macOS shows it, the lock screen).")
+            LabeledContent("Widgets not updating?") {
+                Button("Refresh Widgets") {
+                    Task { await hub.refresh() }
+                    WidgetRefresher.forceRefresh()
+                }
+                .help("Reloads every GlassTunes widget on your desktop")
             }
         } header: {
             Text("General")

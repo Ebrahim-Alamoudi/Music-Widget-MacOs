@@ -15,6 +15,7 @@
 		3F77C91A022C16DC15E9C442 /* GlassTunesWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 58B431777965F9972C72598F /* GlassTunesWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		457FC5F0C8F0D3D6006362F3 /* MiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F544C4A14F6C6FD9C674F92 /* MiniPlayerView.swift */; };
 		508935864513D0CEACD3D4B8 /* PlayerHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */; };
+		67968A579E20FE48425DD7D5 /* ControlHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CF7108507DF84C286C2B33A /* ControlHUD.swift */; };
 		80DAF440DDFC45D8D542576B /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
 		920190EDCB58B84837A57151 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6317B59DFBB510104BC500B /* WindowManager.swift */; };
 		9E8DFE746B9D98FBCE5419B3 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33037F37C3706EF3ACB6E27E /* MainView.swift */; };
@@ -25,6 +26,7 @@
 		C6C060E7231E8693D52447F7 /* SonosSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014F306A843F0CA1C8DB5C78 /* SonosSource.swift */; };
 		D1D81DCC18C80EFCF2DF50D7 /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 772D47972C5ADE530BBA1924 /* QueueView.swift */; };
 		D2BE0C400D3D05A5D4E30375 /* SpotifySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A231D10C80BA05B629FE581 /* SpotifySource.swift */; };
+		D3343CA3C005BC0F690D2E8A /* SystemIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03CEE06EF454549A6B87335 /* SystemIntegration.swift */; };
 		D3D0849092EA4C98AA807B4F /* Artwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599BDDA8B708CE0185CB4B8A /* Artwork.swift */; };
 		E945C631F118E0561517EE4E /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
 		EA9AB52CCD8B4F6F2484D587 /* Compat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FF236436B75830007C897E /* Compat.swift */; };
@@ -32,6 +34,7 @@
 		EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6346E462F296242E8DE501F1 /* GlassTunesApp.swift */; };
 		F0FC6051EC7EA2219AD33AF4 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
 		F26786C8D22120029947DCDE /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
+		F53A3FD46ADC1299D53C1F53 /* AlbumWallpaper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD137EED099CAC4EA6B5CFC7 /* AlbumWallpaper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +73,7 @@
 		58B431777965F9972C72598F /* GlassTunesWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GlassTunesWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		599BDDA8B708CE0185CB4B8A /* Artwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Artwork.swift; sourceTree = "<group>"; };
 		5B768BF743D1163582852501 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5CF7108507DF84C286C2B33A /* ControlHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlHUD.swift; sourceTree = "<group>"; };
 		5F0041DAF775E1380F12BA23 /* SharedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStore.swift; sourceTree = "<group>"; };
 		6346E462F296242E8DE501F1 /* GlassTunesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassTunesApp.swift; sourceTree = "<group>"; };
 		64F1343E7B652E45049C80F1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -81,10 +85,12 @@
 		B0F54389515DD06426FEBB5A /* YouTubeMusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeMusicSource.swift; sourceTree = "<group>"; };
 		B2FF236436B75830007C897E /* Compat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compat.swift; sourceTree = "<group>"; };
 		B9E467DF6BF975538BBE30C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C03CEE06EF454549A6B87335 /* SystemIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemIntegration.swift; sourceTree = "<group>"; };
 		C3FF2941859A768E066577AE /* GlassTunesWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassTunesWidgets.entitlements; sourceTree = "<group>"; };
 		C6317B59DFBB510104BC500B /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		CFE6D79D06DDD9C89B425B87 /* QueueArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueArtwork.swift; sourceTree = "<group>"; };
 		E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackIntents.swift; sourceTree = "<group>"; };
+		FD137EED099CAC4EA6B5CFC7 /* AlbumWallpaper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumWallpaper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -142,9 +148,11 @@
 		BF19818D4D0205F72D9BA297 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				FD137EED099CAC4EA6B5CFC7 /* AlbumWallpaper.swift */,
 				599BDDA8B708CE0185CB4B8A /* Artwork.swift */,
 				64F1343E7B652E45049C80F1 /* Assets.xcassets */,
 				B2FF236436B75830007C897E /* Compat.swift */,
+				5CF7108507DF84C286C2B33A /* ControlHUD.swift */,
 				686A91246C265F552787A620 /* ExpandedPlayerView.swift */,
 				AC2588B7ADAF4A615EF92BD6 /* GlassTunes.entitlements */,
 				6346E462F296242E8DE501F1 /* GlassTunesApp.swift */,
@@ -154,6 +162,7 @@
 				561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */,
 				CFE6D79D06DDD9C89B425B87 /* QueueArtwork.swift */,
 				772D47972C5ADE530BBA1924 /* QueueView.swift */,
+				C03CEE06EF454549A6B87335 /* SystemIntegration.swift */,
 				C6317B59DFBB510104BC500B /* WindowManager.swift */,
 				95782D317044619893CE5D2A /* Sources */,
 			);
@@ -264,9 +273,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F53A3FD46ADC1299D53C1F53 /* AlbumWallpaper.swift in Sources */,
 				A518DD1A06D13163BFA0F957 /* AppleMusicSource.swift in Sources */,
 				D3D0849092EA4C98AA807B4F /* Artwork.swift in Sources */,
 				EA9AB52CCD8B4F6F2484D587 /* Compat.swift in Sources */,
+				67968A579E20FE48425DD7D5 /* ControlHUD.swift in Sources */,
 				BF760B03D7228B8CF8C490D8 /* ExpandedPlayerView.swift in Sources */,
 				EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */,
 				9E8DFE746B9D98FBCE5419B3 /* MainView.swift in Sources */,
@@ -279,6 +290,7 @@
 				E945C631F118E0561517EE4E /* SharedStore.swift in Sources */,
 				C6C060E7231E8693D52447F7 /* SonosSource.swift in Sources */,
 				D2BE0C400D3D05A5D4E30375 /* SpotifySource.swift in Sources */,
+				D3343CA3C005BC0F690D2E8A /* SystemIntegration.swift in Sources */,
 				1D2585479EEA336DB44EC889 /* WidgetViews.swift in Sources */,
 				920190EDCB58B84837A57151 /* WindowManager.swift in Sources */,
 				141916BD05D50B87FAD209EA /* YouTubeMusicSource.swift in Sources */,

@@ -117,12 +117,16 @@ final class PlayerHub {
         case .volumeDown, .volumeUp:
             guard let volume = nowPlaying.volume else { return }
             setVolume(volume + (command == .volumeUp ? 6 : -6))
+            ControlHUD.show(.volume)
         case .seek:
             guard let fraction = SharedStore.commandValue, nowPlaying.duration > 0 else { return }
             perform(.seek(min(1, max(0, fraction)) * nowPlaying.duration))
+            ControlHUD.show(.seek)
         case .setVolume:
             guard let level = SharedStore.commandValue else { return }
             setVolume(Int(level))
+            // Widgets can't be dragged, so offer a real slider right where the user clicked.
+            ControlHUD.show(.volume)
         default:
             guard let action = PlayerAction(command) else { return }
             perform(action)
@@ -347,6 +351,8 @@ final class PlayerHub {
         nowPlaying = np
         SharedStore.nowPlaying = np
         if widgetsNeedReload { WidgetCenter.shared.reloadAllTimelines() }
+        NowPlayingPublisher.update(np, artwork: artwork)
+        if trackChanged { AlbumWallpaper.shared.update(artwork: artwork, trackID: np.trackID) }
         // Warm the queue in the background so opening it is instant (Spotify has none to fetch).
         if trackChanged, !np.isEmpty, np.source != .spotify {
             Task { await refreshQueue() }
@@ -422,6 +428,8 @@ final class PlayerHub {
         artwork = NSImage(data: jpeg)
         if nowPlaying.trackID == id || nowPlaying.isEmpty {
             nowPlaying.tint = artwork.flatMap(Artwork.averageColor)
+            NowPlayingPublisher.update(nowPlaying, artwork: artwork)
+            AlbumWallpaper.shared.update(artwork: artwork, trackID: id)
         }
         pruneArtwork(keeping: id)
     }
