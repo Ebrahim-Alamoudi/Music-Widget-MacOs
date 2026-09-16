@@ -7,6 +7,7 @@ enum WindowManager {
     private static var playerWindow: NSWindow?
     private static var miniPanel: NSPanel?
     private static var miniGlass: NSGlassEffectView?
+    private static var miniButtons: [NSButton] = []
 
     // MARK: Mini player
 
@@ -26,6 +27,13 @@ enum WindowManager {
         miniGlass?.tintColor = NSColor(color).withAlphaComponent(0.25)
     }
 
+    static func setMiniButtonsVisible(_ visible: Bool) {
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.18
+            for button in miniButtons { button.animator().alphaValue = visible ? 1 : 0 }
+        }
+    }
+
     static func setMiniPinned(_ pinned: Bool) {
         miniPanel?.level = pinned ? .floating : .normal
     }
@@ -36,7 +44,7 @@ enum WindowManager {
         // it's computed from the window rectangle and showed up as a dark box around the glass.
         let margin: CGFloat = 24
         let frame = NSRect(x: 0, y: 0, width: size.width + margin * 2, height: size.height + margin * 2)
-        let panel = KeyablePanel(contentRect: frame, styleMask: [.borderless, .fullSizeContentView],
+        let panel = KeyablePanel(contentRect: frame, styleMask: [.borderless, .closable, .miniaturizable, .fullSizeContentView],
                                  backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -46,11 +54,13 @@ enum WindowManager {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.level = UserDefaults.standard.object(forKey: "miniPinned") as? Bool == false ? .normal : .floating
 
-        let container = NSView(frame: frame)
+        let glassFrame = NSRect(x: margin, y: margin, width: size.width, height: size.height)
+        let container = HoverView(frame: frame, hoverRect: glassFrame) { inside in
+            WindowManager.setMiniButtonsVisible(inside)
+        }
         container.wantsLayer = true
         container.layer?.backgroundColor = .clear
 
-        let glassFrame = NSRect(x: margin, y: margin, width: size.width, height: size.height)
         let cornerRadius: CGFloat = 28
         let shadow = NSView(frame: glassFrame)
         shadow.wantsLayer = true
@@ -71,6 +81,24 @@ enum WindowManager {
         hosting.frame = NSRect(origin: .zero, size: size)
         glass.contentView = hosting
         container.addSubview(glass)
+
+        // The real macOS window buttons, floating over the artwork like Apple Music's mini player.
+        miniButtons = []
+        var x = glassFrame.minX + 22
+        for type: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
+            guard let button = NSWindow.standardWindowButton(type, for: [.titled, .closable, .miniaturizable, .resizable]) else { continue }
+            button.setFrameOrigin(NSPoint(x: x, y: glassFrame.maxY - 22 - button.frame.height))
+            x += button.frame.width + 6
+            button.alphaValue = 0
+            if type == .zoomButton {
+                button.target = ZoomToFullPlayer.shared
+                button.action = #selector(ZoomToFullPlayer.open)
+                button.toolTip = "Full Player"
+            }
+            container.addSubview(button)
+            miniButtons.append(button)
+        }
+
         panel.contentView = container
         miniGlass = glass
 
@@ -79,7 +107,7 @@ enum WindowManager {
             panel.setFrameOrigin(NSPoint(x: screen.maxX - frame.width - 4, y: screen.maxY - frame.height))
         }
         panel.setFrameAutosaveName("MiniPlayer2")
-        releaseOnClose(panel) { miniPanel = nil; miniGlass = nil }
+        releaseOnClose(panel) { miniPanel = nil; miniGlass = nil; miniButtons = [] }
         return panel
     }
 
@@ -158,6 +186,32 @@ enum WindowManager {
         }
         releaseOnClose(window) { playerWindow = nil }
         return window
+    }
+}
+
+/// Reports when the pointer enters or leaves a region, even while it's over subviews like the window buttons.
+private final class HoverView: NSView {
+    private let hoverRect: NSRect
+    private let onHover: (Bool) -> Void
+
+    init(frame: NSRect, hoverRect: NSRect, onHover: @escaping (Bool) -> Void) {
+        self.hoverRect = hoverRect
+        self.onHover = onHover
+        super.init(frame: frame)
+        addTrackingArea(NSTrackingArea(rect: hoverRect, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func mouseEntered(with event: NSEvent) { onHover(true) }
+    override func mouseExited(with event: NSEvent) { onHover(false) }
+}
+
+private final class ZoomToFullPlayer: NSObject {
+    static let shared = ZoomToFullPlayer()
+
+    @MainActor @objc func open() {
+        WindowManager.showPlayer()
     }
 }
 

@@ -108,12 +108,6 @@ struct MiniPlayerView: View {
                     HeaderButton(symbol: pinned ? "pin.fill" : "pin", help: pinned ? "Stop keeping on top" : "Keep on top") {
                         pinned.toggle()
                     }
-                    HeaderButton(symbol: "arrow.up.left.and.arrow.down.right", help: "Full player") {
-                        WindowManager.showPlayer()
-                    }
-                    HeaderButton(symbol: "xmark", help: "Close") {
-                        WindowManager.closeMiniPlayer()
-                    }
                 }
                 .transition(.opacity)
             }
