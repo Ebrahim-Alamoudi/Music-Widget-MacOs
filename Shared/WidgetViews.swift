@@ -495,8 +495,8 @@ struct LargePlayerView: View {
         VStack(spacing: 0) {
             // Artwork, titles, and the route/source button in the corner.
             HStack(alignment: .center, spacing: 14) {
-                ArtworkView(image: np.isEmpty ? nil : snapshot.artwork, tint: snapshot.tint, corner: 12)
-                    .frame(width: 76, height: 76)
+                ArtworkView(image: np.isEmpty ? nil : snapshot.artwork, tint: snapshot.tint, corner: 14)
+                    .frame(width: 88, height: 88)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(np.isEmpty ? "Not Playing" : np.title)
                         .font(.system(size: 17, weight: .semibold))
@@ -524,44 +524,12 @@ struct LargePlayerView: View {
 
             Spacer(minLength: 10)
 
-            TransportRow(snapshot: snapshot, size: 30)
+            TransportRow(snapshot: snapshot, size: 34)
 
-            Spacer(minLength: 12)
-
-            VolumeStrip(volume: np.volume)
+            Spacer(minLength: 8)
         }
         .padding(.horizontal, 4)
         .padding(.vertical, 6)
-    }
-}
-
-/// Control Center volume row. Widgets can't be dragged, so the speaker icons step the volume.
-struct VolumeStrip: View {
-    let volume: Int?
-    @Environment(\.isStaticWidgetPreview) private var isStaticPreview
-
-    var body: some View {
-        HStack(spacing: 10) {
-            GlyphButton(intent: VolumeDownIntent(), symbol: "speaker.fill", size: 12, active: volume != nil)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(.primary.opacity(0.2))
-                    Capsule().fill(.primary)
-                        .frame(width: geo.size.width * CGFloat(volume ?? 0) / 100)
-                }
-            }
-            .frame(height: 7)
-            .widgetAccentable()
-            .overlay {
-                if volume != nil && !isStaticPreview {
-                    // 5% steps; tap where you want the level.
-                    TapTargets(count: 20) { SetVolumeIntent(level: (Int($0 * 20) + 1) * 5) }
-                        .frame(height: 22)
-                }
-            }
-            GlyphButton(intent: VolumeUpIntent(), symbol: "speaker.wave.3.fill", size: 12, active: volume != nil)
-        }
-        .opacity(volume == nil ? 0.4 : 1)
     }
 }
 

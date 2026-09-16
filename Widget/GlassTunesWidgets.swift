@@ -90,7 +90,7 @@ struct DeckWidget: Widget {
             WidgetRoot(entry: $0)
         }
         .configurationDisplayName("Music Deck")
-        .description("The iPhone Control Center player: artwork, scrubber, controls and volume.")
+        .description("The iPhone Control Center player: artwork, scrubber and controls.")
         .supportedFamilies([.systemLarge])
     }
 }
