@@ -471,7 +471,7 @@ private struct ScaledWidgetPreview: View {
                 .environment(\.isStaticWidgetPreview, true)
                 .padding(16)
                 .frame(width: size.width, height: size.height)
-                .background { GlassBackdrop(snapshot: snapshot) }
+                .background { GlassBackdrop(snapshot: snapshot, liveGlass: true) }
                 .clipShape(shape)
                 .overlay { shape.strokeBorder(.separator, lineWidth: 0.5) }
                 .scaleEffect(scale, anchor: .center)

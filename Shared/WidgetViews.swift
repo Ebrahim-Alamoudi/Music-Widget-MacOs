@@ -116,6 +116,9 @@ extension View {
 
 struct GlassBackdrop: View {
     let snapshot: PlayerSnapshot
+    /// True only inside the app, where glass is drawn live. Desktop widgets are rendered as
+    /// snapshots, where glass and materials turn into a cloudy fill.
+    var liveGlass = false
 
     var body: some View {
         ZStack {
@@ -138,7 +141,7 @@ struct GlassBackdrop: View {
                 RadialGradient(colors: [snapshot.tint.opacity(0.25), .clear], center: .bottomTrailing, startRadius: 0, endRadius: 260)
                 Color.white.opacity(0.06)
             case .clear:
-                ClearLiquidGlass()
+                ClearLiquidGlass(liveGlass: liveGlass)
             }
             if snapshot.style != .clear {
                 // Specular sheen across the top-left edge.
@@ -149,19 +152,23 @@ struct GlassBackdrop: View {
     }
 }
 
-/// See-through Liquid Glass: clear glass (macOS 26+) or the thinnest system material,
+/// See-through Liquid Glass: fully transparent on the desktop (matching macOS's own clear widgets),
 /// with the bright rim and soft top-left highlight that make glass read as glass.
 struct ClearLiquidGlass: View {
+    var liveGlass = false
+
     var body: some View {
         ZStack {
-            glass
-            // Faint body so the shape is visible on any wallpaper.
-            Color.white.opacity(0.03)
+            if liveGlass {
+                glass
+            }
+            // Barely-there body so the shape still reads on any wallpaper.
+            Color.white.opacity(0.02)
             // Soft specular highlight, strongest at the top-left.
             RadialGradient(colors: [.white.opacity(0.22), .white.opacity(0)], center: .topLeading,
                            startRadius: 0, endRadius: 220)
             // Very light darkening at the bottom keeps white text readable.
-            LinearGradient(colors: [.clear, .black.opacity(0.12)], startPoint: .center, endPoint: .bottom)
+            LinearGradient(colors: [.clear, .black.opacity(0.08)], startPoint: .center, endPoint: .bottom)
             // Rim light: bright on the top-left edge, fading around, catching again bottom-right.
             ContainerRelativeShape()
                 .strokeBorder(LinearGradient(stops: [
