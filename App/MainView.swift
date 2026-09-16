@@ -83,10 +83,6 @@ private struct MenuBarToolbarMenu: View {
             }
             .pickerStyle(.inline)
             .labelsHidden()
-            Divider()
-            Button(showInMenuBar ? "Remove from Menu Bar" : "Show in Menu Bar") {
-                showInMenuBar.toggle()
-            }
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "menubar.rectangle")
@@ -95,7 +91,7 @@ private struct MenuBarToolbarMenu: View {
         }
         .menuIndicator(.visible)
         .fixedSize()
-        .help("How GlassTunes appears in the menu bar")
+        .help("How GlassTunes appears in the menu bar. Hide it completely in General.")
     }
 }
 
@@ -420,6 +416,7 @@ private struct GeneralSection: View {
                     launchAtLogin = SMAppService.mainApp.status == .enabled
                 }
             Toggle("Keep mini player on top", isOn: $miniPinned)
+            Toggle("Show in menu bar", isOn: $showMenuBarIcon)
             Toggle("Hide Dock icon", isOn: $hideDockIcon)
                 .onChange(of: hideDockIcon) { _, hide in
                     NSApp.setActivationPolicy(hide ? .accessory : .regular)
@@ -435,7 +432,7 @@ private struct GeneralSection: View {
             Text("General")
         } footer: {
             if hideDockIcon && !showMenuBarIcon {
-                Text("GlassTunes is hidden from the Dock and the menu bar (toolbar › Menu Bar). Open it from Applications or Spotlight to get back here.")
+                Text("GlassTunes is hidden from the Dock and the menu bar. Open it from Applications or Spotlight to get back here.")
             }
         }
     }
