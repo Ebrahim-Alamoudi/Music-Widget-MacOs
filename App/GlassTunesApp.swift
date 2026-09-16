@@ -43,19 +43,34 @@ struct GlassTunesApp: App {
             MenuBarContent()
                 .environment(hub)
         } label: {
-            MenuBarLabel(isPlaying: hub.nowPlaying.isPlaying)
+            MenuBarLabel(nowPlaying: hub.nowPlaying)
         }
     }
 }
 
 /// Always alive, so it's where we grab SwiftUI's `openWindow` for AppKit callers.
 private struct MenuBarLabel: View {
-    let isPlaying: Bool
+    let nowPlaying: NowPlaying
+    @AppStorage("menuBarStyle") private var style: MenuBarStyle = .iconOnly
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        Image(systemName: isPlaying ? "music.note" : "music.note.list")
-            .onAppear { WindowManager.openMainWindow = { openWindow(id: "main") } }
+        let icon = Image(systemName: nowPlaying.isPlaying ? "music.note" : "music.note.list")
+        Group {
+            switch style {
+            case .iconOnly: icon
+            case .textOnly: Text(text)
+            case .iconAndText: HStack(spacing: 4) { icon; Text(text) }
+            }
+        }
+        .onAppear { WindowManager.openMainWindow = { openWindow(id: "main") } }
+    }
+
+    /// "Title — Artist", kept short so it doesn't crowd the menu bar.
+    private var text: String {
+        guard !nowPlaying.isEmpty else { return "Not Playing" }
+        let full = nowPlaying.artist.isEmpty ? nowPlaying.title : "\(nowPlaying.title) — \(nowPlaying.artist)"
+        return full.count > 32 ? String(full.prefix(31)) + "…" : full
     }
 }
 

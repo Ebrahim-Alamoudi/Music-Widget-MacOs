@@ -42,12 +42,7 @@ struct MainView: View {
         .navigationSubtitle(hub.nowPlaying.isEmpty ? "Not Playing" : hub.nowPlaying.sourceName)
         .toolbar {
             ToolbarItem {
-                Picker("Source", selection: $hub.selection) {
-                    ForEach(SourceKind.allCases) { Text($0.title).tag($0) }
-                }
-                .pickerStyle(.menu)
-                .fixedSize()
-                .help("Where GlassTunes gets music from")
+                MenuBarToolbarMenu()
             }
             ToolbarItemGroup {
                 Button("Mini Player", systemImage: "pip") { WindowManager.showMiniPlayer() }
@@ -56,6 +51,51 @@ struct MainView: View {
                     .help("Open the full player (⇧⌘F)")
             }
         }
+    }
+}
+
+enum MenuBarStyle: String, CaseIterable, Identifiable {
+    case iconAndText, iconOnly, textOnly
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .iconAndText: "Icon and Text"
+        case .iconOnly: "Icon Only"
+        case .textOnly: "Text Only"
+        }
+    }
+}
+
+/// Toolbar button for how GlassTunes appears in the menu bar.
+private struct MenuBarToolbarMenu: View {
+    @AppStorage("menuBarStyle") private var style: MenuBarStyle = .iconOnly
+    @AppStorage("showMenuBarIcon") private var showInMenuBar = true
+
+    var body: some View {
+        Menu {
+            Picker("Menu Bar Shows", selection: Binding(
+                get: { style },
+                set: { style = $0; showInMenuBar = true }
+            )) {
+                ForEach(MenuBarStyle.allCases) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.inline)
+            .labelsHidden()
+            Divider()
+            Button(showInMenuBar ? "Remove from Menu Bar" : "Show in Menu Bar") {
+                showInMenuBar.toggle()
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "menubar.rectangle")
+                Text(showInMenuBar ? style.title : "Hidden")
+            }
+        }
+        .menuIndicator(.visible)
+        .fixedSize()
+        .help("How GlassTunes appears in the menu bar")
     }
 }
 
@@ -366,6 +406,7 @@ private struct GeneralSection: View {
     @AppStorage("miniPinned") private var miniPinned = true
     @AppStorage("hideDockIcon") private var hideDockIcon = false
     @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
+    @AppStorage("menuBarStyle") private var menuBarStyle: MenuBarStyle = .iconOnly
 
     var body: some View {
         Section {
@@ -376,6 +417,11 @@ private struct GeneralSection: View {
                 }
             Toggle("Keep mini player on top", isOn: $miniPinned)
             Toggle("Show in menu bar", isOn: $showMenuBarIcon)
+            if showMenuBarIcon {
+                Picker("Menu bar shows", selection: $menuBarStyle) {
+                    ForEach(MenuBarStyle.allCases) { Text($0.title).tag($0) }
+                }
+            }
             Toggle("Hide Dock icon", isOn: $hideDockIcon)
                 .onChange(of: hideDockIcon) { _, hide in
                     NSApp.setActivationPolicy(hide ? .accessory : .regular)
