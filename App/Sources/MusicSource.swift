@@ -12,7 +12,7 @@ enum PlayerAction: Equatable {
         case .previous: self = .previous
         case .shuffle: self = .toggleShuffle
         case .repeatMode: self = .cycleRepeat
-        case .nextSource, .volumeDown, .volumeUp: return nil
+        case .nextSource, .volumeDown, .volumeUp, .seek, .setVolume: return nil
         }
     }
 }

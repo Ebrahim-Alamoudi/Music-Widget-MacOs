@@ -99,7 +99,7 @@ struct RecentTrack: Codable, Identifiable, Equatable {
 /// Widgets run sandboxed and can't talk to other apps, so they post a Darwin notification
 /// that the GlassTunes helper app listens for.
 enum PlayerCommand: String, CaseIterable {
-    case playPause, next, previous, shuffle, repeatMode, nextSource, volumeDown, volumeUp
+    case playPause, next, previous, shuffle, repeatMode, nextSource, volumeDown, volumeUp, seek, setVolume
 
     var notificationName: String { "com.ibrahim.glasstunes.command.\(rawValue)" }
 
@@ -158,6 +158,25 @@ enum SharedStore {
     static func icon(for bundleID: String?) -> NSImage? {
         guard let bundleID else { return nil }
         return NSImage(contentsOf: iconURL(for: bundleID))
+    }
+
+    /// Value for the last `seek` (0...1 of the song) or `setVolume` (0...100) command.
+    /// Darwin notifications can't carry data, so the widget leaves it here for the app.
+    static var commandValue: Double? {
+        get {
+            guard let value = load(CommandValue.self, "command.json"),
+                  Date().timeIntervalSince(value.date) < 10 else { return nil }
+            return value.value
+        }
+        set {
+            guard let newValue else { return }
+            save(CommandValue(value: newValue, date: Date()), "command.json")
+        }
+    }
+
+    private struct CommandValue: Codable {
+        var value: Double
+        var date: Date
     }
 
     /// Instant feedback in the widget before the helper app reports the real state.

@@ -98,6 +98,57 @@ struct VolumeUpIntent: AppIntent {
     }
 }
 
+struct SeekIntent: AppIntent {
+    static let title: LocalizedStringResource = "Jump to Position"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Position")
+    var fraction: Double
+
+    init() {}
+
+    init(fraction: Double) {
+        self.fraction = fraction
+    }
+
+    func perform() async throws -> some IntentResult {
+        var np = SharedStore.nowPlaying
+        if !np.isEmpty, np.duration > 0 {
+            np.position = fraction * np.duration
+            np.capturedAt = Date()
+            SharedStore.nowPlaying = np
+        }
+        SharedStore.commandValue = fraction
+        await send(.seek)
+        return .result()
+    }
+}
+
+struct SetVolumeIntent: AppIntent {
+    static let title: LocalizedStringResource = "Set Volume"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Volume")
+    var level: Int
+
+    init() {}
+
+    init(level: Int) {
+        self.level = level
+    }
+
+    func perform() async throws -> some IntentResult {
+        var np = SharedStore.nowPlaying
+        if np.volume != nil {
+            np.volume = level
+            SharedStore.nowPlaying = np
+        }
+        SharedStore.commandValue = Double(level)
+        await send(.setVolume)
+        return .result()
+    }
+}
+
 struct PreviousTrackIntent: AppIntent {
     static let title: LocalizedStringResource = "Previous Track"
     static let isDiscoverable = false

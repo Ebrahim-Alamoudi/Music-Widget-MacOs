@@ -283,6 +283,26 @@ struct TransportRow: View {
     }
 }
 
+/// Widgets can't be dragged, so a bar is covered with a row of invisible buttons:
+/// tapping anywhere on it jumps to that spot.
+struct TapTargets<I: AppIntent>: View {
+    let count: Int
+    let intent: (Double) -> I
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<count, id: \.self) { index in
+                Button(intent: intent((Double(index) + 0.5) / Double(count))) {
+                    Color.clear
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
 extension EnvironmentValues {
     /// True when widget views are drawn inside the app as previews. Previews skip the
     /// timer-driven views, which redraw every frame outside of WidgetKit.
@@ -301,6 +321,7 @@ struct TrackProgress: View {
         let position = nowPlaying.position(at: .now)
         let total = max(nowPlaying.duration, 0.01)
         VStack(spacing: 3) {
+            Group {
             if isLive {
                 ProgressView(timerInterval: nowPlaying.startDate...nowPlaying.endDate, countsDown: false) {
                     EmptyView()
@@ -320,6 +341,14 @@ struct TrackProgress: View {
                     }
                 }
                 .frame(height: barHeight)
+            }
+            }
+            // Invisible tap row over the bar, taller than the bar so it's easy to hit.
+            .overlay {
+                if nowPlaying.duration > 0 && !isStaticPreview {
+                    TapTargets(count: 24) { SeekIntent(fraction: $0) }
+                        .frame(height: 22)
+                }
             }
 
             if showTimes {
@@ -509,6 +538,7 @@ struct LargePlayerView: View {
 /// Control Center volume row. Widgets can't be dragged, so the speaker icons step the volume.
 struct VolumeStrip: View {
     let volume: Int?
+    @Environment(\.isStaticWidgetPreview) private var isStaticPreview
 
     var body: some View {
         HStack(spacing: 10) {
@@ -522,6 +552,13 @@ struct VolumeStrip: View {
             }
             .frame(height: 7)
             .widgetAccentable()
+            .overlay {
+                if volume != nil && !isStaticPreview {
+                    // 5% steps; tap where you want the level.
+                    TapTargets(count: 20) { SetVolumeIntent(level: (Int($0 * 20) + 1) * 5) }
+                        .frame(height: 22)
+                }
+            }
             GlyphButton(intent: VolumeUpIntent(), symbol: "speaker.wave.3.fill", size: 12, active: volume != nil)
         }
         .opacity(volume == nil ? 0.4 : 1)

@@ -117,6 +117,12 @@ final class PlayerHub {
         case .volumeDown, .volumeUp:
             guard let volume = nowPlaying.volume else { return }
             setVolume(volume + (command == .volumeUp ? 6 : -6))
+        case .seek:
+            guard let fraction = SharedStore.commandValue, nowPlaying.duration > 0 else { return }
+            perform(.seek(min(1, max(0, fraction)) * nowPlaying.duration))
+        case .setVolume:
+            guard let level = SharedStore.commandValue else { return }
+            setVolume(Int(level))
         default:
             guard let action = PlayerAction(command) else { return }
             perform(action)
@@ -130,6 +136,9 @@ final class PlayerHub {
         let kind = nowPlaying.isEmpty ? (selection == .automatic ? automaticPick ?? .appleMusic : selection) : nowPlaying.source
         guard let target = source(kind) else { return }
         if action == .next || action == .previous { lastManualSkip = Date() }
+        // Capture the state *before* any optimistic change: Sonos derives Play/Pause and the new
+        // play mode from it, so a pre-flipped value would send the opposite command.
+        let current = nowPlaying
         if action == .toggleShuffle || action == .cycleRepeat {
             if action == .toggleShuffle, let shuffle = nowPlaying.shuffle {
                 nowPlaying.shuffle = !shuffle
@@ -150,7 +159,6 @@ final class PlayerHub {
             nowPlaying.position = nowPlaying.position(at: Date())
             nowPlaying.capturedAt = Date()
         }
-        let current = nowPlaying
         Task {
             await target.perform(action, current: current)
             WidgetCenter.shared.reloadAllTimelines()
