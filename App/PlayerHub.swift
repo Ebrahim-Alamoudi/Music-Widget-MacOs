@@ -39,6 +39,9 @@ final class PlayerHub {
     @ObservationIgnored private var lastManualSkip = Date.distantPast
     /// Shuffle/repeat the user just chose; kept briefly while the player catches up.
     @ObservationIgnored private var pendingToggle: (shuffle: Bool?, repeatMode: RepeatMode?, until: Date)?
+    /// Volume the user is dragging to; shown right away and sent without piling up commands.
+    @ObservationIgnored private var pendingVolume: (value: Int, until: Date)?
+    @ObservationIgnored private var volumeTask: Task<Void, Never>?
     /// Source the user switched to with the widget/mini player switch button (Automatic mode only).
     @ObservationIgnored private var pinnedSource: SourceKind?
     /// Last source Automatic mode showed, so it doesn't flip-flop between players.
@@ -107,9 +110,7 @@ final class PlayerHub {
             cycleSource()
         case .volumeDown, .volumeUp:
             guard let volume = nowPlaying.volume else { return }
-            let step = command == .volumeUp ? 6 : -6
-            nowPlaying.volume = min(100, max(0, volume + step))
-            perform(.setVolume(nowPlaying.volume ?? volume))
+            setVolume(volume + (command == .volumeUp ? 6 : -6))
         default:
             guard let action = PlayerAction(command) else { return }
             perform(action)
@@ -117,6 +118,9 @@ final class PlayerHub {
     }
 
     func perform(_ action: PlayerAction) {
+        if case .setVolume(let value) = action {
+            return setVolume(value)
+        }
         let kind = nowPlaying.isEmpty ? (selection == .automatic ? automaticPick ?? .appleMusic : selection) : nowPlaying.source
         guard let target = source(kind) else { return }
         if action == .next || action == .previous { lastManualSkip = Date() }
@@ -149,6 +153,26 @@ final class PlayerHub {
                 try? await Task.sleep(for: .seconds(delay))
                 await refresh()
             }
+        }
+    }
+
+    /// Coalesces volume changes: at most one command in flight, always sending the newest value.
+    func setVolume(_ value: Int) {
+        let volume = min(100, max(0, value))
+        guard !nowPlaying.isEmpty, let target = source(nowPlaying.source), nowPlaying.volume != volume else { return }
+        nowPlaying.volume = volume
+        pendingVolume = (volume, Date().addingTimeInterval(2))
+        guard volumeTask == nil else { return }
+        volumeTask = Task {
+            var sent: Int?
+            while let latest = pendingVolume?.value, latest != sent {
+                sent = latest
+                await target.perform(.setVolume(latest), current: nowPlaying)
+                try? await Task.sleep(for: .milliseconds(60))
+            }
+            volumeTask = nil
+            SharedStore.nowPlaying = nowPlaying
+            WidgetCenter.shared.reloadAllTimelines()
         }
     }
 
@@ -252,6 +276,9 @@ final class PlayerHub {
             }
         } else {
             np.tint = old.tint
+            if let pending = pendingVolume {
+                if Date() < pending.until { np.volume = pending.value } else { pendingVolume = nil }
+            }
             if let pending = pendingToggle {
                 if Date() < pending.until {
                     np.shuffle = pending.shuffle
