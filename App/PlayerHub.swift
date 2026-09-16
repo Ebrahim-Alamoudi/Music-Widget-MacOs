@@ -27,6 +27,8 @@ final class PlayerHub {
     private(set) var isMixing = false
     /// Up Next for the current song, fetched ahead of time so the queue opens instantly.
     private(set) var queue: QueueResult?
+    /// Queue thumbnails by item ID, filled in as they load.
+    private(set) var queueImages: [String: NSImage] = [:]
     @ObservationIgnored private var queueTrackID = ""
     @ObservationIgnored private var queueTask: Task<Void, Never>?
 
@@ -193,9 +195,19 @@ final class PlayerHub {
         let trackID = nowPlaying.trackID
         let task = Task {
             let result = await source.upNext()
-            if nowPlaying.trackID == trackID {
-                queue = result
-                queueTrackID = trackID
+            guard nowPlaying.trackID == trackID else { return }
+            if case .items(let items) = result {
+                // Show anything already cached in the same update as the list.
+                queueImages = Dictionary(items.compactMap { item in QueueArtwork.cached(item).map { (item.id, $0) } },
+                                         uniquingKeysWith: { a, _ in a })
+            }
+            queue = result
+            queueTrackID = trackID
+            if case .items(let items) = result {
+                await QueueArtwork.load(items) { id, image in
+                    guard self.queueTrackID == trackID, self.queueImages[id] == nil else { return }
+                    self.queueImages[id] = image
+                }
             }
         }
         queueTask = task

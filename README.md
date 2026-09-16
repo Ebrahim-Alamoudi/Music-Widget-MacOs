@@ -66,6 +66,8 @@ ditto build/Build/Products/Release/GlassTunes.app /Applications/GlassTunes.app
 open /Applications/GlassTunes.app
 ```
 
+To build and install on this Mac, run `Scripts/install-local.sh`. It also removes Xcode's build copies from macOS's app registry; if those stay registered, desktop widgets can load an old copy or show up blank.
+
 To package a release (`dist/GlassTunes-<version>.dmg`, `.zip` and checksums), run `Scripts/make-release.sh`.
 
 To redraw the app icon, run `swift Scripts/make-icon.swift App/Assets.xcassets/AppIcon.appiconset`.

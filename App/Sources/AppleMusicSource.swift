@@ -123,7 +123,7 @@ final class AppleMusicSource: MusicSource {
         _ = Script.run("tell application id \"com.apple.Music\"\n\(command)\nend tell")
     }
 
-    /// Fetches names and artists for the next 30 songs in two bulk requests.
+    /// Fetches the next 30 songs' details in four bulk requests.
     private static let queueScript = """
     tell application id "com.apple.Music"
         try
@@ -133,13 +133,15 @@ final class AppleMusicSource: MusicSource {
         on error
             return {}
         end try
-        if currentIndex is greater than or equal to trackCount then return {{}, {}, 0}
+        if currentIndex is greater than or equal to trackCount then return {{}, {}, {}, {}, 0}
         set firstIndex to currentIndex + 1
         set lastIndex to currentIndex + 30
         if lastIndex > trackCount then set lastIndex to trackCount
         set trackNames to name of tracks firstIndex thru lastIndex of thePlaylist
         set trackArtists to artist of tracks firstIndex thru lastIndex of thePlaylist
-        return {trackNames, trackArtists, firstIndex}
+        set trackAlbums to album of tracks firstIndex thru lastIndex of thePlaylist
+        set trackKeys to persistent ID of tracks firstIndex thru lastIndex of thePlaylist
+        return {trackNames, trackArtists, trackAlbums, trackKeys, firstIndex}
     end tell
     """
 
@@ -148,16 +150,21 @@ final class AppleMusicSource: MusicSource {
         guard case .success(let result) = Script.run(Self.queueScript) else {
             return .unavailable("Music didn't share its queue.")
         }
-        guard result.numberOfItems == 3,
-              let names = result.atIndex(1), let artists = result.atIndex(2), names.numberOfItems > 0 else {
+        guard result.numberOfItems == 5, let names = result.atIndex(1), names.numberOfItems > 0,
+              let artists = result.atIndex(2), let albums = result.atIndex(3), let keys = result.atIndex(4) else {
             return .items([])
         }
-        let first = Int(result.double(at: 3))
+        let first = Int(result.double(at: 5))
         let items: [QueueItem] = (1...names.numberOfItems).map { index in
             let position = first + index - 1
-            return QueueItem(id: "am\(position)", title: names.string(at: index),
-                             artist: index <= artists.numberOfItems ? artists.string(at: index) : "",
-                             artwork: nil, position: position)
+            let key = keys.string(at: index)
+            return QueueItem(id: key.isEmpty ? "am\(position)" : "am-\(key)-\(position)",
+                             title: names.string(at: index),
+                             artist: artists.string(at: index),
+                             album: albums.string(at: index),
+                             artwork: nil,
+                             persistentID: key.isEmpty ? nil : key,
+                             position: position)
         }
         return .items(items)
     }

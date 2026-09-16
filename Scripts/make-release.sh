@@ -34,5 +34,8 @@ rm -rf "$STAGE"
 ditto -c -k --keepParent "$APP" "$DIST/$NAME.zip"
 
 (cd "$DIST" && shasum -a 256 "$NAME.dmg" "$NAME.zip" > SHA256SUMS.txt)
+
+# Keep macOS from using this build copy for desktop widgets.
+Scripts/unregister-build-copies.sh
 echo "Created:"
 ls -lh "$DIST"

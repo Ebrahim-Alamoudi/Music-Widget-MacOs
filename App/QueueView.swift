@@ -4,7 +4,10 @@ struct QueueItem: Identifiable, Hashable {
     var id: String
     var title: String
     var artist: String
+    var album = ""
     var artwork: URL?
+    /// Apple Music's persistent ID, used to cache its artwork on disk.
+    var persistentID: String?
     /// Source-specific position used to jump to this song.
     var position: Int
 }
@@ -85,7 +88,7 @@ struct QueueView: View {
                 ScrollView {
                     LazyVStack(spacing: 2) {
                         ForEach(items) { item in
-                            QueueRow(item: item) {
+                            QueueRow(item: item, image: hub.queueImages[item.id]) {
                                 hub.playQueueItem(item)
                             }
                         }
@@ -103,19 +106,24 @@ struct QueueView: View {
 
 private struct QueueRow: View {
     let item: QueueItem
+    let image: NSImage?
     let play: () -> Void
     @State private var hovering = false
 
     var body: some View {
         Button(action: play) {
             HStack(spacing: 10) {
-                AsyncImage(url: item.artwork) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
+                ZStack {
                     Rectangle().fill(.quaternary)
-                        .overlay { Image(systemName: "music.note").font(.caption).foregroundStyle(.tertiary) }
+                    if let image {
+                        Image(nsImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .transition(.opacity)
+                    }
                 }
-                .frame(width: 36, height: 36)
+                .animation(.easeOut(duration: 0.25), value: image != nil)
+                .frame(width: 40, height: 40)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 1) {

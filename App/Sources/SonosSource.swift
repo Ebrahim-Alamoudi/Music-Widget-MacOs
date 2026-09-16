@@ -148,7 +148,7 @@ final class SonosSource: MusicSource {
         }
         let current = Int(SOAP.value("Track", in: position) ?? "") ?? 0
         let arguments = "<ObjectID>Q:0</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag>"
-            + "<Filter>dc:title,dc:creator,upnp:albumArtURI</Filter>"
+            + "<Filter>dc:title,dc:creator,upnp:album,upnp:albumArtURI</Filter>"
             + "<StartingIndex>\(current)</StartingIndex><RequestedCount>30</RequestedCount><SortCriteria></SortCriteria>"
         guard let response = try? await SOAP.call(host: host, path: "/MediaServer/ContentDirectory/Control",
                                                   service: "ContentDirectory", action: "Browse", arguments: arguments),
@@ -162,7 +162,8 @@ final class SonosSource: MusicSource {
             let number = current + offset + 1 // 1-based track number in the queue
             items.append(QueueItem(id: "sonos\(number)", title: SOAP.value("title", in: entry) ?? "Unknown",
                                    artist: SOAP.value("creator", in: entry) ?? "",
-                                   artwork: URL(string: art), position: number))
+                                   album: SOAP.value("album", in: entry) ?? "",
+                                   artwork: art.isEmpty ? nil : URL(string: art), position: number))
         }
         return .items(items)
     }

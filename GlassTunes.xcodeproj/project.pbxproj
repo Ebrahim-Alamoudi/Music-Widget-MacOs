@@ -28,6 +28,7 @@
 		D3D0849092EA4C98AA807B4F /* Artwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599BDDA8B708CE0185CB4B8A /* Artwork.swift */; };
 		E945C631F118E0561517EE4E /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
 		EA9AB52CCD8B4F6F2484D587 /* Compat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FF236436B75830007C897E /* Compat.swift */; };
+		ECB106B6AAD364FCD00CD3AF /* QueueArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE6D79D06DDD9C89B425B87 /* QueueArtwork.swift */; };
 		EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6346E462F296242E8DE501F1 /* GlassTunesApp.swift */; };
 		F0FC6051EC7EA2219AD33AF4 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
 		F26786C8D22120029947DCDE /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
@@ -82,6 +83,7 @@
 		B9E467DF6BF975538BBE30C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C3FF2941859A768E066577AE /* GlassTunesWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassTunesWidgets.entitlements; sourceTree = "<group>"; };
 		C6317B59DFBB510104BC500B /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
+		CFE6D79D06DDD9C89B425B87 /* QueueArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueArtwork.swift; sourceTree = "<group>"; };
 		E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackIntents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -150,6 +152,7 @@
 				33037F37C3706EF3ACB6E27E /* MainView.swift */,
 				1F544C4A14F6C6FD9C674F92 /* MiniPlayerView.swift */,
 				561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */,
+				CFE6D79D06DDD9C89B425B87 /* QueueArtwork.swift */,
 				772D47972C5ADE530BBA1924 /* QueueView.swift */,
 				C6317B59DFBB510104BC500B /* WindowManager.swift */,
 				95782D317044619893CE5D2A /* Sources */,
@@ -271,6 +274,7 @@
 				C47B7CE3F173AC7FCC91BFFD /* MusicSource.swift in Sources */,
 				F26786C8D22120029947DCDE /* PlaybackIntents.swift in Sources */,
 				508935864513D0CEACD3D4B8 /* PlayerHub.swift in Sources */,
+				ECB106B6AAD364FCD00CD3AF /* QueueArtwork.swift in Sources */,
 				D1D81DCC18C80EFCF2DF50D7 /* QueueView.swift in Sources */,
 				E945C631F118E0561517EE4E /* SharedStore.swift in Sources */,
 				C6C060E7231E8693D52447F7 /* SonosSource.swift in Sources */,

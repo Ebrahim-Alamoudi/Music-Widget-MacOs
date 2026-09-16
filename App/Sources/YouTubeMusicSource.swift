@@ -143,7 +143,8 @@ final class YouTubeMusicSource: MusicSource {
             return .unavailable("Couldn't read the YouTube Music queue.")
         }
         return .items(rows.map {
-            QueueItem(id: "yt\($0.index)", title: $0.title, artist: $0.artist, artwork: URL(string: $0.artwork), position: $0.index)
+            QueueItem(id: "yt\($0.index)", title: $0.title, artist: $0.artist,
+                      artwork: $0.artwork.hasPrefix("http") ? URL(string: $0.artwork) : nil, position: $0.index)
         })
     }
 
