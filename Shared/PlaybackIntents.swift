@@ -68,6 +68,16 @@ struct CycleRepeatIntent: AppIntent {
     }
 }
 
+struct NextSourceIntent: AppIntent {
+    static let title: LocalizedStringResource = "Switch Player"
+    static let isDiscoverable = false
+
+    func perform() async throws -> some IntentResult {
+        await send(.nextSource)
+        return .result()
+    }
+}
+
 struct PreviousTrackIntent: AppIntent {
     static let title: LocalizedStringResource = "Previous Track"
     static let isDiscoverable = false

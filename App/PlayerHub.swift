@@ -3,7 +3,7 @@ import Observation
 import WidgetKit
 
 /// Picks the active music source, mirrors its state into the App Group for the widgets,
-/// and routes play/pause/skip commands from widgets and the player window.
+/// and routes play/pause/skip commands from widgets and the player windows.
 @MainActor
 @Observable
 final class PlayerHub {
@@ -13,13 +13,15 @@ final class PlayerHub {
         didSet {
             UserDefaults.standard.set(selection.rawValue, forKey: "source")
             if selection == .youtubeMusic { UserDefaults.standard.set(true, forKey: "youtubeInAutomatic") }
+            pinnedSource = nil
             Task { await refresh() }
         }
     }
 
     private(set) var nowPlaying = SharedStore.nowPlaying
     private(set) var artwork: NSImage?
-    private(set) var recent = SharedStore.recent
+    private(set) var recentItems: [RecentItem] = []
+    private(set) var sourceIcon: NSImage?
     private(set) var motion: MotionURLs?
     /// True for a few seconds after an AutoMix/crossfade transition is detected.
     private(set) var isMixing = false
@@ -28,11 +30,16 @@ final class PlayerHub {
     @ObservationIgnored private let appleMusic = AppleMusicSource()
     @ObservationIgnored private let spotify = SpotifySource()
     @ObservationIgnored private let youtube = YouTubeMusicSource()
-    @ObservationIgnored private var thumbnails: [String: NSImage] = [:]
+    @ObservationIgnored private var recent = SharedStore.recent
+    @ObservationIgnored private var icons: [String: NSImage] = [:]
     @ObservationIgnored private var started = false
     @ObservationIgnored private var refreshing = false
     @ObservationIgnored private var refreshQueued = false
+    @ObservationIgnored private var tick = 0
     @ObservationIgnored private var lastManualSkip = Date.distantPast
+    /// Source the user switched to with the widget/mini player switch button (Automatic mode only).
+    @ObservationIgnored private var pinnedSource: SourceKind?
+    /// Last source Automatic mode showed, so it doesn't flip-flop between players.
     @ObservationIgnored private var automaticPick: SourceKind?
     /// Bumped whenever a source reports a new permission issue, so views re-read `issue(for:)`.
     private var issueStamp = 0
@@ -40,8 +47,11 @@ final class PlayerHub {
     private init() {
         selection = UserDefaults.standard.string(forKey: "source").flatMap(SourceKind.init) ?? .automatic
         artwork = nowPlaying.isEmpty ? nil : SharedStore.artwork(for: nowPlaying.trackID)
+        sourceIcon = icon(for: nowPlaying.sourceAppID)
+        rebuildRecentItems()
     }
 
+    /// Local players first: when several are playing, Automatic prefers this Mac over Sonos.
     private var sources: [MusicSource] { [appleMusic, spotify, youtube, sonos] }
 
     private func source(_ kind: SourceKind) -> MusicSource? {
@@ -57,11 +67,25 @@ final class PlayerHub {
             }
         }
         CommandListener.start()
-        // Browsers and Sonos don't announce changes, so poll.
-        Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
-            Task { @MainActor in await PlayerHub.shared.refresh() }
+        // Music and Spotify announce changes; browsers and Sonos have to be polled.
+        let timer = Timer(timeInterval: 3, repeats: true) { _ in
+            Task { @MainActor in PlayerHub.shared.pollTick() }
         }
+        timer.tolerance = 1
+        RunLoop.main.add(timer, forMode: .common)
         Task { await refresh() }
+    }
+
+    private func pollTick() {
+        tick += 1
+        let needsFastPoll: Bool = switch selection {
+        case .youtubeMusic, .sonos: true
+        case .automatic: sonos.isAvailable || (UserDefaults.standard.bool(forKey: "youtubeInAutomatic") && youtube.isAvailable)
+        default: false
+        }
+        if needsFastPoll || tick % 5 == 0 {
+            Task { await refresh() }
+        }
     }
 
     func issue(for kind: SourceKind) -> String? {
@@ -74,6 +98,14 @@ final class PlayerHub {
     }
 
     // MARK: Commands
+
+    func handle(_ command: PlayerCommand) {
+        if command == .nextSource {
+            cycleSource()
+        } else if let action = PlayerAction(command) {
+            perform(action)
+        }
+    }
 
     func perform(_ action: PlayerAction) {
         let kind = nowPlaying.isEmpty ? (selection == .automatic ? automaticPick ?? .appleMusic : selection) : nowPlaying.source
@@ -96,6 +128,16 @@ final class PlayerHub {
         }
     }
 
+    /// Shows the next player that has something loaded (Automatic mode).
+    func cycleSource() {
+        let active = nowPlaying.availableSources ?? []
+        guard active.count > 1 else { return }
+        let index = active.firstIndex(of: nowPlaying.source) ?? -1
+        pinnedSource = active[(index + 1) % active.count]
+        if selection != .automatic { selection = .automatic }
+        Task { await refresh() }
+    }
+
     // MARK: State sync
 
     func refresh() async {
@@ -105,8 +147,8 @@ final class PlayerHub {
         }
         refreshing = true
         let issuesBefore = sources.map(\.issue)
-        let reading = await currentReading()
-        apply(reading)
+        let (reading, available) = await currentReading()
+        apply(reading, available: available)
         if sources.map(\.issue) != issuesBefore { issueStamp += 1 }
         refreshing = false
         if refreshQueued {
@@ -115,10 +157,10 @@ final class PlayerHub {
         }
     }
 
-    private func currentReading() async -> SourceReading? {
+    private func currentReading() async -> (SourceReading?, [SourceKind]) {
         guard selection == .automatic else {
-            guard let source = source(selection), source.isAvailable else { return nil }
-            return await source.read()
+            guard let source = source(selection), source.isAvailable, let reading = await source.read() else { return (nil, []) }
+            return (reading, [selection])
         }
         var readings: [SourceReading] = []
         // Browsers are only scripted after the user has picked YouTube Music once, to avoid surprise permission prompts.
@@ -126,21 +168,30 @@ final class PlayerHub {
         for source in sources where source.isAvailable && (source.kind != .youtubeMusic || includeYouTube) {
             if let reading = await source.read() { readings.append(reading) }
         }
-        // Prefer whatever is playing, sticking with the current pick when several are.
-        let pick = readings.first { $0.nowPlaying.isPlaying && $0.nowPlaying.source == automaticPick }
-            ?? readings.first { $0.nowPlaying.isPlaying }
-            ?? readings.first { $0.nowPlaying.source == automaticPick }
+        let available = readings.map(\.nowPlaying.source)
+        if let pinned = pinnedSource, !available.contains(pinned) { pinnedSource = nil }
+
+        func first(_ match: (NowPlaying) -> Bool) -> SourceReading? {
+            readings.first { match($0.nowPlaying) }
+        }
+        // 1. what the user switched to, 2. something playing on this Mac, 3. something playing anywhere,
+        // 4. whatever was shown before, 5. anything paused.
+        let pick = first { $0.source == self.pinnedSource }
+            ?? first { $0.isPlaying && $0.source != .sonos }
+            ?? first { $0.isPlaying }
+            ?? first { $0.source == self.automaticPick }
             ?? readings.first
         automaticPick = pick?.nowPlaying.source ?? automaticPick
-        return pick
+        return (pick, available)
     }
 
-    private func apply(_ reading: SourceReading?) {
+    private func apply(_ reading: SourceReading?, available: [SourceKind]) {
         let old = nowPlaying
         var np = reading?.nowPlaying ?? .stopped
         if !np.isEmpty {
             np.trackID = Self.stableID("\(np.source.rawValue)|\(np.trackID)")
             np.capturedAt = Date()
+            np.availableSources = available
         }
         let trackChanged = np.trackID != old.trackID
 
@@ -156,16 +207,21 @@ final class PlayerHub {
             }
         } else {
             np.tint = old.tint
+            // Keep the old timestamp while playback is on schedule so unchanged state compares equal.
+            if np.state == old.state, abs(old.position(at: np.capturedAt) - np.position) < 2 {
+                np.position = old.position
+                np.capturedAt = old.capturedAt
+            }
         }
-        if let appID = np.sourceAppID { Artwork.saveIcon(for: appID) }
+        guard np != old else { return }
 
-        let seeked = old.isPlaying && np.isPlaying && abs(old.position(at: Date()) - np.position) > 3
-        let changed = trackChanged || seeked
-            || np.state != old.state || np.source != old.source
-            || np.shuffle != old.shuffle || np.repeatMode != old.repeatMode
+        if np.sourceAppID != old.sourceAppID { sourceIcon = icon(for: np.sourceAppID) }
+        let seeked = np.capturedAt != old.capturedAt && np.state == old.state && !trackChanged
+        let widgetsNeedReload = trackChanged || seeked || np.state != old.state || np.source != old.source
+            || np.shuffle != old.shuffle || np.repeatMode != old.repeatMode || np.availableSources != old.availableSources
         nowPlaying = np
         SharedStore.nowPlaying = np
-        if changed { WidgetCenter.shared.reloadAllTimelines() }
+        if widgetsNeedReload { WidgetCenter.shared.reloadAllTimelines() }
     }
 
     /// Music apps don't report AutoMix/crossfade, so infer it: a song that changed on its own
@@ -187,6 +243,23 @@ final class PlayerHub {
         list.insert(RecentTrack(id: np.trackID, title: np.title, artist: np.artist), at: 0)
         recent = Array(list.prefix(8))
         SharedStore.recent = recent
+        rebuildRecentItems()
+    }
+
+    private func rebuildRecentItems() {
+        let previous = Dictionary(recentItems.map { ($0.id, $0.image) }, uniquingKeysWith: { a, _ in a })
+        recentItems = recent.map { track in
+            RecentItem(track: track, image: previous[track.id] ?? SharedStore.artwork(for: track.id).map { Artwork.thumbnail($0, side: 120) })
+        }
+    }
+
+    private func icon(for bundleID: String?) -> NSImage? {
+        guard let bundleID else { return nil }
+        if let cached = icons[bundleID] { return cached }
+        Artwork.saveIcon(for: bundleID)
+        let image = SharedStore.icon(for: bundleID)
+        icons[bundleID] = image
+        return image
     }
 
     // MARK: Artwork
@@ -236,17 +309,10 @@ final class PlayerHub {
         PlayerSnapshot(
             nowPlaying: nowPlaying,
             artwork: nowPlaying.isEmpty ? nil : artwork,
-            recent: recent.prefix(4).map { RecentItem(track: $0, image: thumbnail(for: $0.id)) },
+            recent: Array(recentItems.prefix(4)),
             style: style,
-            sourceIcon: SharedStore.icon(for: nowPlaying.sourceAppID)
+            sourceIcon: sourceIcon
         )
-    }
-
-    private func thumbnail(for id: String) -> NSImage? {
-        if let cached = thumbnails[id] { return cached }
-        let image = SharedStore.artwork(for: id)
-        thumbnails[id] = image
-        return image
     }
 
     private func pruneArtwork(keeping id: String) {
@@ -255,7 +321,6 @@ final class PlayerHub {
         for file in (try? FileManager.default.contentsOfDirectory(atPath: dir.path)) ?? [] where !keep.contains(file) {
             try? FileManager.default.removeItem(at: dir.appendingPathComponent(file))
         }
-        thumbnails = thumbnails.filter { keep.contains("\($0.key).jpg") }
     }
 
     private static func stableID(_ string: String) -> String {
@@ -277,7 +342,7 @@ private enum CommandListener {
         for command in PlayerCommand.allCases {
             CFNotificationCenterAddObserver(center, observer, { _, _, name, _, _ in
                 guard let raw = name?.rawValue as String?, let command = PlayerCommand(notificationName: raw) else { return }
-                Task { @MainActor in PlayerHub.shared.perform(PlayerAction(command)) }
+                Task { @MainActor in PlayerHub.shared.handle(command) }
             }, command.notificationName as CFString, nil, .deliverImmediately)
         }
     }

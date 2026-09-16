@@ -188,6 +188,33 @@ struct SourceBadge: View {
     }
 }
 
+/// The source badge; when several players are active it becomes a button that switches between them.
+struct SourceSwitcher: View {
+    let snapshot: PlayerSnapshot
+    var size: CGFloat = 20
+
+    var body: some View {
+        let count = snapshot.nowPlaying.availableSources?.count ?? 0
+        if count > 1 {
+            Button(intent: NextSourceIntent()) {
+                HStack(spacing: 3) {
+                    SourceBadge(snapshot: snapshot, size: size)
+                    Image(systemName: "arrow.left.arrow.right")
+                        .font(.system(size: size * 0.42, weight: .bold))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.leading, 2)
+                .padding(.trailing, 5)
+                .padding(.vertical, 2)
+                .liquidGlass(Capsule(), intensity: 0.6)
+            }
+            .buttonStyle(.plain)
+        } else {
+            SourceBadge(snapshot: snapshot, size: size)
+        }
+    }
+}
+
 /// Plain white transport glyph, as on the iPhone Lock Screen.
 struct GlyphButton<I: AppIntent>: View {
     let intent: I
@@ -226,40 +253,55 @@ struct TransportRow: View {
     }
 }
 
+extension EnvironmentValues {
+    /// True when widget views are drawn inside the app as previews. Previews skip the
+    /// timer-driven views, which redraw every frame outside of WidgetKit.
+    @Entry var isStaticWidgetPreview = false
+}
+
 struct TrackProgress: View {
     let nowPlaying: NowPlaying
     var showTimes = true
+    @Environment(\.isStaticWidgetPreview) private var isStaticPreview
+
+    private var isLive: Bool { nowPlaying.isPlaying && nowPlaying.duration > 0 && !isStaticPreview }
 
     var body: some View {
+        let position = nowPlaying.position(at: .now)
+        let total = max(nowPlaying.duration, 0.01)
         VStack(spacing: 3) {
-            Group {
-                if nowPlaying.isPlaying, nowPlaying.duration > 0 {
-                    ProgressView(timerInterval: nowPlaying.startDate...nowPlaying.endDate, countsDown: false) {
-                        EmptyView()
-                    } currentValueLabel: {
-                        EmptyView()
-                    }
-                } else {
-                    let total = max(nowPlaying.duration, 0.01)
-                    ProgressView(value: min(nowPlaying.position, total), total: total)
+            if isLive {
+                ProgressView(timerInterval: nowPlaying.startDate...nowPlaying.endDate, countsDown: false) {
+                    EmptyView()
+                } currentValueLabel: {
+                    EmptyView()
                 }
+                .progressViewStyle(.linear)
+                .tint(Color.primary)
+                .labelsHidden()
+            } else {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(.primary.opacity(0.2))
+                        Capsule().fill(.primary)
+                            .frame(width: geo.size.width * min(1, position / total))
+                    }
+                }
+                .frame(height: 4)
             }
-            .progressViewStyle(.linear)
-            .tint(Color.primary)
-            .labelsHidden()
 
             if showTimes {
                 HStack {
-                    if nowPlaying.isPlaying, nowPlaying.duration > 0 {
+                    if isLive {
                         Text(timerInterval: nowPlaying.startDate...nowPlaying.endDate, countsDown: false)
                             .frame(maxWidth: 44, alignment: .leading)
                         Spacer()
                         Text(timerInterval: nowPlaying.startDate...nowPlaying.endDate, countsDown: true)
                             .frame(maxWidth: 44, alignment: .trailing)
                     } else {
-                        Text(Self.format(nowPlaying.position))
+                        Text(Self.format(position))
                         Spacer()
-                        Text("-" + Self.format(nowPlaying.duration - nowPlaying.position))
+                        Text("-" + Self.format(nowPlaying.duration - position))
                     }
                 }
                 .font(.system(size: 10, weight: .semibold).monospacedDigit())
@@ -347,7 +389,7 @@ struct SmallPlayerView: View {
                     ArtworkView(image: snapshot.artwork, tint: snapshot.tint, corner: 9)
                         .frame(width: 50, height: 50)
                     Spacer(minLength: 4)
-                    SourceBadge(snapshot: snapshot, size: 20)
+                    SourceSwitcher(snapshot: snapshot, size: 18)
                 }
                 Spacer(minLength: 6)
                 TrackTitles(nowPlaying: snapshot.nowPlaying, titleSize: 13)
@@ -372,7 +414,7 @@ struct MediumPlayerView: View {
                         .frame(width: 50, height: 50)
                     TrackTitles(nowPlaying: snapshot.nowPlaying, titleSize: 14)
                     Spacer(minLength: 4)
-                    SourceBadge(snapshot: snapshot, size: 24)
+                    SourceSwitcher(snapshot: snapshot, size: 22)
                 }
                 Spacer(minLength: 8)
                 TrackProgress(nowPlaying: snapshot.nowPlaying)
@@ -400,7 +442,7 @@ struct LargePlayerView: View {
                         .shadow(color: .black.opacity(0.3), radius: 14, y: 8)
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 6) {
-                            SourceBadge(snapshot: snapshot, size: 18)
+                            SourceSwitcher(snapshot: snapshot, size: 18)
                             Text(np.sourceName)
                                 .font(.system(size: 10, weight: .semibold))
                                 .foregroundStyle(.secondary)

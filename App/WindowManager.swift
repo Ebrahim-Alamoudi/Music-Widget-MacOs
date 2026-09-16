@@ -13,13 +13,13 @@ enum WindowManager {
     static func showMiniPlayer() {
         let panel = miniPanel ?? makeMiniPanel()
         miniPanel = panel
-        playerWindow?.orderOut(nil)
+        playerWindow?.close()
         NSApp.activate()
         panel.makeKeyAndOrderFront(nil)
     }
 
     static func closeMiniPlayer() {
-        miniPanel?.orderOut(nil)
+        miniPanel?.close()
     }
 
     static func setMiniTint(_ color: Color) {
@@ -32,32 +32,54 @@ enum WindowManager {
 
     private static func makeMiniPanel() -> NSPanel {
         let size = MiniPlayerView.size
-        let panel = KeyablePanel(contentRect: NSRect(origin: .zero, size: size),
-                                 styleMask: [.borderless, .fullSizeContentView],
+        // Transparent margin so our rounded shadow isn't clipped. The system window shadow is off:
+        // it's computed from the window rectangle and showed up as a dark box around the glass.
+        let margin: CGFloat = 24
+        let frame = NSRect(x: 0, y: 0, width: size.width + margin * 2, height: size.height + margin * 2)
+        let panel = KeyablePanel(contentRect: frame, styleMask: [.borderless, .fullSizeContentView],
                                  backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = true
+        panel.hasShadow = false
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.level = UserDefaults.standard.object(forKey: "miniPinned") as? Bool == false ? .normal : .floating
 
-        let glass = NSGlassEffectView(frame: NSRect(origin: .zero, size: size))
-        glass.cornerRadius = 28
+        let container = NSView(frame: frame)
+        container.wantsLayer = true
+        container.layer?.backgroundColor = .clear
+
+        let glassFrame = NSRect(x: margin, y: margin, width: size.width, height: size.height)
+        let cornerRadius: CGFloat = 28
+        let shadow = NSView(frame: glassFrame)
+        shadow.wantsLayer = true
+        if let layer = shadow.layer {
+            layer.shadowPath = CGPath(roundedRect: CGRect(origin: .zero, size: size),
+                                      cornerWidth: cornerRadius, cornerHeight: cornerRadius, transform: nil)
+            layer.shadowColor = NSColor.black.cgColor
+            layer.shadowOpacity = 0.28
+            layer.shadowRadius = 14
+            layer.shadowOffset = CGSize(width: 0, height: -6)
+        }
+        container.addSubview(shadow)
+
+        let glass = NSGlassEffectView(frame: glassFrame)
+        glass.cornerRadius = cornerRadius
         glass.style = .regular
-        glass.autoresizingMask = [.width, .height]
         let hosting = NSHostingView(rootView: MiniPlayerView().environment(PlayerHub.shared))
-        hosting.frame = glass.bounds
+        hosting.frame = NSRect(origin: .zero, size: size)
         glass.contentView = hosting
-        panel.contentView = glass
+        container.addSubview(glass)
+        panel.contentView = container
         miniGlass = glass
 
         // First time: tuck it under the menu bar on the right, where widgets usually live.
-        if !panel.setFrameUsingName("MiniPlayer"), let screen = NSScreen.main?.visibleFrame {
-            panel.setFrameOrigin(NSPoint(x: screen.maxX - size.width - 20, y: screen.maxY - size.height - 16))
+        if !panel.setFrameUsingName("MiniPlayer2"), let screen = NSScreen.main?.visibleFrame {
+            panel.setFrameOrigin(NSPoint(x: screen.maxX - frame.width - 4, y: screen.maxY - frame.height))
         }
-        panel.setFrameAutosaveName("MiniPlayer")
+        panel.setFrameAutosaveName("MiniPlayer2")
+        releaseOnClose(panel) { miniPanel = nil; miniGlass = nil }
         return panel
     }
 
@@ -66,12 +88,12 @@ enum WindowManager {
     static func showPlayer() {
         let window = playerWindow ?? makeWindow(
             ExpandedPlayerView(),
-            size: NSSize(width: 360, height: 660),
-            title: "Now Playing",
+            size: NSSize(width: 380, height: 700),
+            title: "Full Player",
             panel: true
         )
         playerWindow = window
-        miniPanel?.orderOut(nil)
+        miniPanel?.close()
         present(window)
     }
 
@@ -80,8 +102,7 @@ enum WindowManager {
     /// Set by the menu bar label, which SwiftUI keeps alive for the app's whole lifetime.
     static var openMainWindow: (() -> Void)?
 
-    static func showMain(page: AppPage? = nil) {
-        if let page { AppNavigation.shared.page = page }
+    static func showMain() {
         NSApp.activate()
         if let window = NSApp.windows.first(where: { $0.identifier?.rawValue.hasPrefix("main") == true }) {
             window.makeKeyAndOrderFront(nil)
@@ -91,7 +112,24 @@ enum WindowManager {
     }
 
     static func showSettings() {
-        showMain(page: .general)
+        showMain()
+    }
+
+    private static var closeObservers: [ObjectIdentifier: NSObjectProtocol] = [:]
+
+    private static func releaseOnClose(_ window: NSWindow, _ onClose: @escaping @MainActor () -> Void) {
+        let key = ObjectIdentifier(window)
+        closeObservers[key] = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification, object: window, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated {
+                window.contentView = nil
+                onClose()
+                if let observer = closeObservers.removeValue(forKey: key) {
+                    NotificationCenter.default.removeObserver(observer)
+                }
+            }
+        }
     }
 
     private static func present(_ window: NSWindow) {
@@ -101,22 +139,24 @@ enum WindowManager {
 
     private static func makeWindow<V: View>(_ view: V, size: NSSize, title: String, panel: Bool) -> NSWindow {
         let hosting = NSHostingView(rootView: view.environment(PlayerHub.shared))
-        let style: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
+        let style: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
         let window = panel
             ? KeyablePanel(contentRect: NSRect(origin: .zero, size: size), styleMask: style, backing: .buffered, defer: false)
             : NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: style, backing: .buffered, defer: false)
         window.title = title
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        window.isMovableByWindowBackground = true
+        window.isMovableByWindowBackground = false // dragging the seek bar must not move the window
         window.isReleasedWhenClosed = false
         window.contentView = hosting
         window.setContentSize(size)
+        window.contentMinSize = NSSize(width: 320, height: 600)
         window.center()
         window.setFrameAutosaveName(title)
         if let panel = window as? NSPanel {
             panel.hidesOnDeactivate = false
         }
+        releaseOnClose(window) { playerWindow = nil }
         return window
     }
 }
@@ -127,6 +167,6 @@ private final class KeyablePanel: NSPanel {
     override var canBecomeMain: Bool { true }
 
     override func cancelOperation(_ sender: Any?) {
-        orderOut(nil)
+        close()
     }
 }

@@ -15,6 +15,13 @@ enum Artwork {
         return NSBitmapImageRep(cgImage: scaled).representation(using: .jpeg, properties: [.compressionFactor: 0.88])
     }
 
+    /// Small decoded copy for lists, so thumbnails don't keep full-size bitmaps in memory.
+    static func thumbnail(_ image: NSImage, side: CGFloat) -> NSImage {
+        guard let data = jpeg(image, maxSide: side * 2), let small = NSImage(data: data) else { return image }
+        small.size = NSSize(width: side, height: side)
+        return small
+    }
+
     /// Average color, nudged to be saturated and mid-bright so it works as a glass tint.
     static func averageColor(of image: NSImage) -> RGBColor? {
         guard let cg = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }

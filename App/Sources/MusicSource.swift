@@ -5,13 +5,14 @@ enum PlayerAction: Equatable {
     case seek(Double)
     case setVolume(Int)
 
-    init(_ command: PlayerCommand) {
+    init?(_ command: PlayerCommand) {
         switch command {
         case .playPause: self = .playPause
         case .next: self = .next
         case .previous: self = .previous
         case .shuffle: self = .toggleShuffle
         case .repeatMode: self = .cycleRepeat
+        case .nextSource: return nil
         }
     }
 }

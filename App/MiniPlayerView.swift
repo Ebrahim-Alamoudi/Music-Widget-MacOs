@@ -42,8 +42,9 @@ struct MiniPlayerView: View {
         }
         .padding(14)
         .frame(width: Self.size.width, height: Self.size.height)
-        .contentShape(Rectangle())
+        .contentShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .gesture(WindowDragGesture())
+        .focusEffectDisabled()
         .onHover { hovering = $0 }
         .animation(.spring(duration: 0.45), value: np.isPlaying)
         .animation(.easeInOut(duration: hub.isMixing ? 1.4 : 0.35), value: np.trackID)
@@ -61,7 +62,7 @@ struct MiniPlayerView: View {
                 Image(systemName: "music.note").font(.system(size: 36, weight: .semibold)).foregroundStyle(.white.opacity(0.85))
             }
             if let square = hub.motion?.square {
-                LoopingVideo(url: square, isPlaying: np.isPlaying)
+                LoopingVideo(url: square, isPlaying: np.isPlaying, maxPixels: 400)
             }
         }
         .frame(width: 128, height: 128)
@@ -87,7 +88,7 @@ struct MiniPlayerView: View {
 
     private var header: some View {
         HStack(spacing: 5) {
-            if let icon = SharedStore.icon(for: np.sourceAppID) {
+            if let icon = hub.sourceIcon {
                 Image(nsImage: icon).resizable().frame(width: 14, height: 14)
             } else {
                 Image(systemName: hub.selection.symbol).font(.system(size: 10, weight: .semibold))
@@ -96,6 +97,11 @@ struct MiniPlayerView: View {
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+            if (np.availableSources?.count ?? 0) > 1 {
+                HeaderButton(symbol: "arrow.left.arrow.right", help: "Switch to the other player") {
+                    hub.cycleSource()
+                }
+            }
             Spacer(minLength: 4)
             if hovering {
                 HStack(spacing: 2) {

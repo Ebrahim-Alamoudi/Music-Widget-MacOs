@@ -10,16 +10,15 @@ struct ExpandedPlayerView: View {
     private var tallVideo: URL? { hub.motion?.tall }
 
     var body: some View {
-        ZStack {
-            PlayerBackground(artwork: hub.artwork, tint: tint, tallVideo: tallVideo,
-                             isPlaying: np.isPlaying, trackID: np.trackID)
-
+        GeometryReader { geo in
+            // Artwork grows with the window but always leaves room for the controls.
+            let heroSide = max(160, min(geo.size.width - 52, geo.size.height - 400))
             VStack(spacing: 0) {
                 topBar
-                Spacer(minLength: 16)
+                Spacer(minLength: 12)
                 if tallVideo == nil {
-                    hero
-                    Spacer(minLength: 24)
+                    hero(side: heroSide)
+                    Spacer(minLength: 20)
                 } else {
                     Spacer()
                 }
@@ -38,14 +37,21 @@ struct ExpandedPlayerView: View {
                             .padding(.top, 16)
                     }
                 }
-                Spacer(minLength: 20)
+                Spacer(minLength: 16)
                 bottomBar
             }
             .padding(.horizontal, 26)
             .padding(.top, 34)
             .padding(.bottom, 18)
+            .frame(width: geo.size.width, height: geo.size.height)
         }
-        .frame(width: 360, height: 660)
+        // A background never changes the layout size, so the oversized color field can't push controls off-screen.
+        .background {
+            PlayerBackground(artwork: hub.artwork, tint: tint, tallVideo: tallVideo,
+                             isPlaying: np.isPlaying, trackID: np.trackID)
+        }
+        .clipped()
+        .frame(minWidth: 320, idealWidth: 380, minHeight: 600, idealHeight: 700)
         .environment(\.colorScheme, .dark)
         .animation(.spring(duration: 0.5), value: np.isPlaying)
         .animation(.easeInOut(duration: hub.isMixing ? 1.6 : 0.4), value: np.trackID)
@@ -55,7 +61,7 @@ struct ExpandedPlayerView: View {
 
     private var topBar: some View {
         HStack(spacing: 8) {
-            if let icon = SharedStore.icon(for: np.sourceAppID) {
+            if let icon = hub.sourceIcon {
                 Image(nsImage: icon).resizable().frame(width: 18, height: 18)
             }
             Text(np.sourceName.isEmpty ? "Not Playing" : np.sourceName)
@@ -67,7 +73,7 @@ struct ExpandedPlayerView: View {
         .glassEffect(.clear, in: .capsule)
     }
 
-    private var hero: some View {
+    private func hero(side: CGFloat) -> some View {
         let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
         return ZStack {
             if let art = hub.artwork {
@@ -77,10 +83,10 @@ struct ExpandedPlayerView: View {
                 Image(systemName: "music.note").font(.system(size: 80, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
             }
             if let square = hub.motion?.square {
-                LoopingVideo(url: square, isPlaying: np.isPlaying)
+                LoopingVideo(url: square, isPlaying: np.isPlaying, maxPixels: 600)
             }
         }
-        .frame(width: 290, height: 290)
+        .frame(width: side, height: side)
         .clipShape(shape)
         .overlay { shape.strokeBorder(.white.opacity(0.12), lineWidth: 0.5) }
         .shadow(color: .black.opacity(np.isPlaying ? 0.45 : 0.2), radius: np.isPlaying ? 30 : 12, y: np.isPlaying ? 18 : 6)
@@ -204,7 +210,7 @@ struct PressScale: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.85 : 1)
             .background {
                 Circle()
-                    .fill(.white.opacity(configuration.isPressed ? 0.15 : 0))
+                    .fill(.primary.opacity(configuration.isPressed ? 0.12 : 0))
                     .scaleEffect(configuration.isPressed ? 1 : 0.6)
             }
             .animation(.spring(duration: 0.25), value: configuration.isPressed)
@@ -221,11 +227,11 @@ struct ToggleGlyph: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isOn ? AnyShapeStyle(.black) : AnyShapeStyle(.primary))
+                .foregroundStyle(isOn ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
                 .frame(width: 38, height: 38)
         }
         .buttonStyle(.plain)
-        .glassEffect(isOn ? .regular.tint(.white).interactive() : .regular.interactive(), in: .circle)
+        .glassEffect(isOn ? .regular.tint(.accentColor).interactive() : .regular.interactive(), in: .circle)
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.35)
     }
@@ -277,7 +283,7 @@ struct Scrubber: View {
     @State private var dragFraction: Double?
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.5)) { context in
+        TimelineView(.animation(minimumInterval: 1, paused: !nowPlaying.isPlaying || dragFraction != nil)) { context in
             let duration = max(nowPlaying.duration, 0.01)
             let live = nowPlaying.position(at: context.date) / duration
             let fraction = min(1, max(0, dragFraction ?? live))
@@ -332,8 +338,8 @@ struct CapsuleBar: View {
         GeometryReader { geo in
             let value = { (x: CGFloat) in min(1, max(0, Double(x / geo.size.width))) }
             ZStack(alignment: .leading) {
-                Capsule().fill(.white.opacity(0.22))
-                Capsule().fill(.white.opacity(isActive ? 1 : 0.8))
+                Capsule().fill(.primary.opacity(0.15))
+                Capsule().fill(.primary.opacity(isActive ? 1 : 0.75))
                     .frame(width: geo.size.width * fraction)
             }
             .frame(height: isActive ? restHeight + 5 : restHeight)
@@ -361,31 +367,22 @@ struct PlayerBackground: View {
     let trackID: String
 
     var body: some View {
+        Color.black.overlay { layers }
+            .clipped()
+            .ignoresSafeArea()
+    }
+
+    private var layers: some View {
         ZStack {
             Color.black
             tint.opacity(0.6)
             if let artwork {
-                TimelineView(.animation(minimumInterval: 1 / 30, paused: !isPlaying)) { context in
-                    let t = context.date.timeIntervalSinceReferenceDate
-                    ZStack {
-                        Image(nsImage: artwork).resizable().aspectRatio(contentMode: .fill)
-                            .frame(width: 900, height: 900)
-                            .rotationEffect(.degrees(t.truncatingRemainder(dividingBy: 90) * 4))
-                        Image(nsImage: artwork).resizable().aspectRatio(contentMode: .fill)
-                            .frame(width: 700, height: 700)
-                            .rotationEffect(.degrees(-t.truncatingRemainder(dividingBy: 60) * 6))
-                            .offset(x: 120 * sin(t / 7), y: 160 * cos(t / 9))
-                            .blendMode(.plusLighter)
-                            .opacity(0.5)
-                    }
-                    .blur(radius: 70)
-                    .saturation(1.4)
-                }
-                .id(trackID)
-                .transition(.opacity)
+                SwirlingArtwork(image: artwork, isAnimating: isPlaying)
+                    .id(trackID)
+                    .transition(.opacity)
             }
             if let tallVideo {
-                LoopingVideo(url: tallVideo, isPlaying: isPlaying)
+                LoopingVideo(url: tallVideo, isPlaying: isPlaying, maxPixels: 1280)
                     .transition(.opacity)
                 LinearGradient(stops: [
                     .init(color: .clear, location: 0.35),
@@ -401,17 +398,59 @@ struct PlayerBackground: View {
     }
 }
 
+/// Apple Music's slowly turning color field. The artwork is shrunk to a few pixels once
+/// (which blurs it for free) and rotated by Core Animation, so it costs almost nothing per frame.
+private struct SwirlingArtwork: View {
+    let image: NSImage
+    let isAnimating: Bool
+    @State private var tiny: NSImage?
+    @State private var angle = 0.0
+
+    var body: some View {
+        ZStack {
+            if let tiny {
+                Image(nsImage: tiny).resizable().interpolation(.high)
+                    .frame(width: 900, height: 900)
+                    .rotationEffect(.degrees(angle))
+                Image(nsImage: tiny).resizable().interpolation(.high)
+                    .frame(width: 650, height: 650)
+                    .rotationEffect(.degrees(-angle * 1.5))
+                    .offset(x: 90, y: 140)
+                    .blendMode(.plusLighter)
+                    .opacity(0.45)
+            }
+        }
+        .blur(radius: 30)
+        .saturation(1.4)
+        .drawingGroup()
+        .task(id: ObjectIdentifier(image)) {
+            tiny = Artwork.thumbnail(image, side: 12)
+        }
+        .onAppear { startSpinning() }
+        .onChange(of: isAnimating) { _, _ in startSpinning() }
+    }
+
+    private func startSpinning() {
+        guard isAnimating else { return }
+        withAnimation(.linear(duration: 120).repeatForever(autoreverses: false)) {
+            angle += 360
+        }
+    }
+}
+
 // MARK: - Video
 
 /// Muted, looping HLS video that fades in once the first frame is ready.
 struct LoopingVideo: NSViewRepresentable {
     let url: URL
     let isPlaying: Bool
+    /// Longest side to stream; smaller views stream a lighter variant.
+    var maxPixels: CGFloat = 800
 
     func makeNSView(context: Context) -> VideoView { VideoView() }
 
     func updateNSView(_ view: VideoView, context: Context) {
-        view.load(url)
+        view.load(url, maxPixels: maxPixels)
         if isPlaying { view.player.play() } else { view.player.pause() }
     }
 
@@ -456,12 +495,13 @@ struct LoopingVideo: NSViewRepresentable {
             CATransaction.commit()
         }
 
-        func load(_ url: URL) {
+        func load(_ url: URL, maxPixels: CGFloat) {
             guard url != current else { return }
             current = url
             playerLayer.opacity = 0
             let item = AVPlayerItem(url: url)
-            item.preferredMaximumResolution = CGSize(width: 1080, height: 1920)
+            item.preferredMaximumResolution = CGSize(width: maxPixels, height: maxPixels)
+            item.preferredForwardBufferDuration = 4
             player.replaceCurrentItem(with: item)
             if let loopObserver { NotificationCenter.default.removeObserver(loopObserver) }
             loopObserver = NotificationCenter.default.addObserver(forName: AVPlayerItem.didPlayToEndTimeNotification,

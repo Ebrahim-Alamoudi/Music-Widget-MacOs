@@ -4,15 +4,13 @@ import SwiftUI
 struct GlassTunesApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var hub = PlayerHub.shared
-    @State private var navigation = AppNavigation.shared
 
     var body: some Scene {
         Window("GlassTunes", id: "main") {
             MainView()
                 .environment(hub)
-                .environment(navigation)
         }
-        .defaultSize(width: 1080, height: 720)
+        .defaultSize(width: 1120, height: 740)
         .windowResizability(.contentMinSize)
         .windowToolbarStyle(.unified)
         .commands {

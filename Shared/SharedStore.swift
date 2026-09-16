@@ -73,6 +73,8 @@ struct NowPlaying: Codable, Equatable {
     /// "AutoMix" / "Crossfade" when the player has song transitions turned on.
     var transition: String?
     var volume: Int?
+    /// Players that currently have something loaded (Automatic mode), for the switch-source button.
+    var availableSources: [SourceKind]?
 
     static let stopped = NowPlaying()
 
@@ -97,7 +99,7 @@ struct RecentTrack: Codable, Identifiable, Equatable {
 /// Widgets run sandboxed and can't talk to other apps, so they post a Darwin notification
 /// that the GlassTunes helper app listens for.
 enum PlayerCommand: String, CaseIterable {
-    case playPause, next, previous, shuffle, repeatMode
+    case playPause, next, previous, shuffle, repeatMode, nextSource
 
     var notificationName: String { "com.ibrahim.glasstunes.command.\(rawValue)" }
 

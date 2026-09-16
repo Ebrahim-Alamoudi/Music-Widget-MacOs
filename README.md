@@ -8,27 +8,23 @@ Click any widget to open a floating Liquid Glass mini player with animated album
 
 ## The app
 
-- **Now Playing:** big animated artwork, a seek bar, controls, volume, shuffle/repeat, AutoMix, and a Recently Played grid.
-- **Widgets:** live previews of all three widgets in each glass style, plus how to add them.
-- **Sources:** choose a source, pick a Sonos room, and find permission settings.
-- **General:** open at login, keep the mini player on top, hide the Dock icon, and refresh widgets.
-- **Mini player:** a 340×156 floating panel on real Liquid Glass (`NSGlassEffectView`). Hover it to pin, expand or close.
-- **Full player:** a 360×660 window in the style of Apple Music's full-screen player.
+One window with native macOS controls, the system font and your accent color:
+
+- **Now Playing (left):** animated artwork, a seek bar, controls, shuffle/repeat, volume, the AutoMix status, and your recent songs.
+- **Settings (right):** where music comes from, the Sonos room, a widget preview for each glass style and size, and General options.
+- **Mini player:** a floating 340×156 panel on real Liquid Glass (`NSGlassEffectView`). Hover it to pin, expand or close it.
+- **Full player:** a resizable window in the style of Apple Music's full-screen player.
 - **Playback menu:** ⌥Space play/pause, ⌘→ / ⌘← to skip, ⇧⌘S shuffle, ⇧⌘R repeat, ⇧⌘P mini player, ⇧⌘F full player.
 
-Every page scrolls and rearranges itself to fit smaller windows.
-
-| Widget | Size | What it shows |
-| --- | --- | --- |
-| Now Playing | Small | iPhone Control Center tile: artwork, source app, title, controls |
-| Player | Medium | iPhone Lock Screen player: artwork, source app, scrubber, controls |
-| Music Deck | Large | Big artwork, scrubber, AutoMix badge, shuffle/repeat, recently played |
-
-Each widget has a **Glass Style** option (right-click → Edit): Artwork Tint, Frosted, or Clear.
+It uses about 1% CPU and about 110 MB of memory when idle. Only the browser and Sonos sources are checked every 3 seconds; Music and Spotify announce their own changes. Closed player windows free their video and views.
 
 ## Sources
 
-Pick one in the settings window, the menu bar menu or the player: **Automatic** (whatever is playing), Apple Music, Spotify, YouTube Music, or a Sonos room.
+Pick one in the main window, the menu bar or the player.
+
+- **Automatic** shows whatever is playing. When music plays both on this Mac and on Sonos, it shows the Mac.
+- When several players have music loaded, the source icon on the widget (and a button on the mini player) switches between them.
+- You can also choose Apple Music, Spotify, YouTube Music or a Sonos room directly.
 
 - **YouTube Music** is controlled through its browser tab. Turn on *Allow JavaScript from Apple Events*: in Chrome, View → Developer; in Safari, Develop → Developer Settings. Firefox can't be scripted.
 - **Sonos** speakers are found on your local network (SSDP) and controlled over their local API. You can also type a speaker's IP address.
@@ -53,8 +49,8 @@ Requires Xcode 27 and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew i
 
 ```bash
 xcodegen generate
-xcodebuild -project GlassTunes.xcodeproj -scheme GlassTunes -derivedDataPath build -allowProvisioningUpdates build
-ditto build/Build/Products/Debug/GlassTunes.app /Applications/GlassTunes.app
+xcodebuild -project GlassTunes.xcodeproj -scheme GlassTunes -configuration Release -derivedDataPath build -allowProvisioningUpdates build
+ditto build/Build/Products/Release/GlassTunes.app /Applications/GlassTunes.app
 open /Applications/GlassTunes.app
 ```
 
