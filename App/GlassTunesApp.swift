@@ -84,12 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         PlayerHub.shared.start()
         WidgetRefresher.refreshIfAppChanged()
-        if AlbumWallpaper.shared.isEnabled { AlbumWallpaper.shared.setEnabled(true) }
-    }
-
-    func applicationWillTerminate(_ notification: Notification) {
-        // Give the user their own wallpaper back.
-        if AlbumWallpaper.shared.isEnabled { AlbumWallpaper.shared.restoreOriginals() }
+        AlbumWallpaper.restoreIfNeeded()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

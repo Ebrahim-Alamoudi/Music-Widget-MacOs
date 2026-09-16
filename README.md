@@ -24,7 +24,6 @@ One window with native macOS controls, the system font and your accent color:
 - **Settings (right):** where music comes from, the Sonos room, a widget preview for each glass style and size, and General options.
 - **Up Next:** the list button shows the queue. That's the current album or playlist in Apple Music, the Sonos queue, or YouTube Music's Up Next. Click a song to play it. Spotify doesn't share its queue.
 - **Widget sliders:** clicking a widget's scrubber or volume bar sets it and pops up a real glass slider at the pointer, so you can keep dragging. Widgets themselves can't be dragged.
-- **Album art wallpaper (optional, General):** your desktop and lock screen wallpaper become the current cover. Your own wallpaper comes back when you turn it off or quit.
 - **Show Sonos in Control Center (General):** publishes Sonos playback to macOS Now Playing, with working play/pause and skip. macOS decides where, and whether, it appears on the lock screen.
 - **Refresh Widgets:** reloads every desktop widget. This also happens automatically after an update.
 - **Menu Bar button (toolbar):** show the icon, the song title, or both, or remove GlassTunes from the menu bar.

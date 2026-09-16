@@ -352,7 +352,6 @@ final class PlayerHub {
         SharedStore.nowPlaying = np
         if widgetsNeedReload { WidgetCenter.shared.reloadAllTimelines() }
         NowPlayingPublisher.update(np, artwork: artwork)
-        if trackChanged { AlbumWallpaper.shared.update(artwork: artwork, trackID: np.trackID) }
         // Warm the queue in the background so opening it is instant (Spotify has none to fetch).
         if trackChanged, !np.isEmpty, np.source != .spotify {
             Task { await refreshQueue() }
@@ -429,7 +428,6 @@ final class PlayerHub {
         if nowPlaying.trackID == id || nowPlaying.isEmpty {
             nowPlaying.tint = artwork.flatMap(Artwork.averageColor)
             NowPlayingPublisher.update(nowPlaying, artwork: artwork)
-            AlbumWallpaper.shared.update(artwork: artwork, trackID: id)
         }
         pruneArtwork(keeping: id)
     }
