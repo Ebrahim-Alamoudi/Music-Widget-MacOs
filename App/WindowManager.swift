@@ -83,58 +83,45 @@ private final class GlassPanel {
     init<Content: View>(content: Content, size: CGSize, cornerRadius: CGFloat, autosaveName: String,
                         zoomHelp: String, zoom: @escaping () -> Void, onClose: @escaping () -> Void) {
         zoomAction = zoom
-        // Transparent margin so the rounded shadow isn't clipped. The system window shadow is off:
-        // it follows the window rectangle and shows up as a dark box around the glass.
-        let margin: CGFloat = 24
-        let frame = NSRect(x: 0, y: 0, width: size.width + margin * 2, height: size.height + margin * 2)
-        let glassFrame = NSRect(x: margin, y: margin, width: size.width, height: size.height)
-
-        panel = KeyablePanel(contentRect: frame, styleMask: [.borderless, .closable, .miniaturizable, .fullSizeContentView],
+        // The window is exactly the glass: no invisible border that would catch clicks meant for
+        // windows underneath. macOS draws the shadow from the rounded glass (see `refreshShadow`).
+        let frame = NSRect(origin: .zero, size: size)
+        panel = KeyablePanel(contentRect: frame,
+                             styleMask: [.borderless, .nonactivatingPanel, .closable, .miniaturizable, .fullSizeContentView],
                              backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = false
+        panel.hasShadow = true
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
+        panel.becomesKeyOnlyIfNeeded = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         if #unavailable(macOS 15.0) {
             panel.isMovableByWindowBackground = true // no WindowDragGesture before macOS 15
         }
 
         var buttons: [NSButton] = []
-        let container = HoverView(frame: frame, hoverRect: glassFrame) { inside in
+        let container = HoverView(frame: frame, hoverRect: frame) { inside in
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.18
                 for button in buttons { button.animator().alphaValue = inside ? 1 : 0 }
             }
         }
         container.wantsLayer = true
+        container.layer?.cornerRadius = cornerRadius
+        container.layer?.cornerCurve = .continuous
+        container.layer?.masksToBounds = true
 
-        let shadow = NSView(frame: glassFrame)
-        shadow.wantsLayer = true
-        if let layer = shadow.layer {
-            layer.shadowPath = CGPath(roundedRect: CGRect(origin: .zero, size: size),
-                                      cornerWidth: cornerRadius, cornerHeight: cornerRadius, transform: nil)
-            layer.shadowColor = NSColor.black.cgColor
-            layer.shadowOpacity = 0.3
-            layer.shadowRadius = 14
-            layer.shadowOffset = CGSize(width: 0, height: -6)
-        }
-        container.addSubview(shadow)
-
-        let hosting = NSHostingView(rootView: content.environment(PlayerHub.shared))
-        hosting.frame = NSRect(origin: .zero, size: size)
-        hosting.wantsLayer = true
-        hosting.layer?.cornerRadius = cornerRadius
-        hosting.layer?.cornerCurve = .continuous
-        hosting.layer?.masksToBounds = true
-        glass = GlassBackdropView.make(frame: glassFrame, cornerRadius: cornerRadius, content: hosting)
+        // Accepts the first click, so the player can be dragged or used while another app is active.
+        let hosting = FirstClickHostingView(rootView: AnyView(content.environment(PlayerHub.shared)))
+        hosting.frame = frame
+        glass = GlassBackdropView.make(frame: frame, cornerRadius: cornerRadius, content: hosting)
         container.addSubview(glass)
 
-        var x = glassFrame.minX + 18
+        var x: CGFloat = 18
         for type: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
             guard let button = NSWindow.standardWindowButton(type, for: [.titled, .closable, .miniaturizable, .resizable]) else { continue }
-            button.setFrameOrigin(NSPoint(x: x, y: glassFrame.maxY - 18 - button.frame.height))
+            button.setFrameOrigin(NSPoint(x: x, y: frame.maxY - 18 - button.frame.height))
             x += button.frame.width + 6
             button.alphaValue = 0
             container.addSubview(button)
@@ -147,7 +134,7 @@ private final class GlassPanel {
         }
 
         if !panel.setFrameUsingName(autosaveName), let screen = NSScreen.main?.visibleFrame {
-            panel.setFrameOrigin(NSPoint(x: screen.maxX - frame.width - 4, y: screen.maxY - frame.height))
+            panel.setFrameOrigin(NSPoint(x: screen.maxX - frame.width - 20, y: screen.maxY - frame.height - 16))
         }
         panel.setFrameAutosaveName(autosaveName)
 
@@ -170,9 +157,20 @@ private final class GlassPanel {
         }
     }
 
+    /// macOS computes a borderless window's shadow from what's drawn. Recomputing it once the glass
+    /// has rendered gives a rounded shadow instead of a dark rectangle.
+    private func refreshShadow() {
+        for delay in [0.05, 0.3] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak panel] in
+                panel?.invalidateShadow()
+            }
+        }
+    }
+
     func show() {
         NSApp.activate()
         panel.makeKeyAndOrderFront(nil)
+        refreshShadow()
     }
 
     @objc private func zoomPressed() {
@@ -194,6 +192,11 @@ private final class HoverView: NSView {
 
     override func mouseEntered(with event: NSEvent) { onHover(true) }
     override func mouseExited(with event: NSEvent) { onHover(false) }
+}
+
+/// A hosting view that reacts to the first click even when another app is active.
+private final class FirstClickHostingView: NSHostingView<AnyView> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
 
 /// Borderless panels can't become key by default; Escape closes them.

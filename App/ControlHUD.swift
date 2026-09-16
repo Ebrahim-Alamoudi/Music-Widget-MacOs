@@ -33,6 +33,7 @@ enum ControlHUD {
         panel.setFrameOrigin(origin)
         panel.alphaValue = 1
         panel.orderFrontRegardless()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { panel.invalidateShadow() }
         scheduleHide()
     }
 
@@ -59,35 +60,24 @@ enum ControlHUD {
     }
 
     private static func makePanel() -> NSPanel {
-        let margin: CGFloat = 16
-        let frame = NSRect(x: 0, y: 0, width: size.width + margin * 2, height: size.height + margin * 2)
+        let frame = NSRect(origin: .zero, size: size)
         let panel = NSPanel(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel],
                             backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = false
+        panel.hasShadow = true
         panel.level = .popUpMenu
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         panel.isReleasedWhenClosed = false
 
-        let container = NSView(frame: frame)
-        container.wantsLayer = true
-        let glassFrame = NSRect(x: margin, y: margin, width: size.width, height: size.height)
-        let shadow = NSView(frame: glassFrame)
-        shadow.wantsLayer = true
-        shadow.layer?.shadowPath = CGPath(roundedRect: CGRect(origin: .zero, size: size),
-                                          cornerWidth: size.height / 2, cornerHeight: size.height / 2, transform: nil)
-        shadow.layer?.shadowColor = NSColor.black.cgColor
-        shadow.layer?.shadowOpacity = 0.3
-        shadow.layer?.shadowRadius = 10
-        shadow.layer?.shadowOffset = CGSize(width: 0, height: -4)
-        container.addSubview(shadow)
-
-        let hosting = NSHostingView(rootView: ControlHUDView().environment(PlayerHub.shared).environment(state))
-        hosting.frame = NSRect(origin: .zero, size: size)
-        container.addSubview(GlassBackdropView.make(frame: glassFrame, cornerRadius: size.height / 2, content: hosting))
-        panel.contentView = container
+        let hosting = HUDHostingView(rootView: AnyView(ControlHUDView().environment(PlayerHub.shared).environment(state)))
+        hosting.frame = frame
+        let glass = GlassBackdropView.make(frame: frame, cornerRadius: size.height / 2, content: hosting)
+        glass.wantsLayer = true
+        glass.layer?.cornerRadius = size.height / 2
+        glass.layer?.masksToBounds = true
+        panel.contentView = glass
 
         // Close when the user clicks somewhere else.
         NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { _ in
@@ -99,6 +89,10 @@ enum ControlHUD {
         }
         return panel
     }
+}
+
+private final class HUDHostingView: NSHostingView<AnyView> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
 
 private struct ControlHUDView: View {
