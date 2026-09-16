@@ -12,7 +12,7 @@ struct MainView: View {
             NowPlayingPanel()
                 .frame(width: 330)
                 .frame(maxHeight: .infinity)
-                .background(.background.secondary)
+                .background(.background.secondary.opacity(0.55))
             Divider()
             HStack(alignment: .top, spacing: 0) {
                 Form {
@@ -28,8 +28,13 @@ struct MainView: View {
                 .frame(minWidth: 360)
             }
             .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
         }
         .frame(minWidth: 1060, minHeight: 680)
+        // macOS 27 look: no solid title bar. Content runs underneath, toolbar controls float on glass,
+        // and the window itself is translucent so the title bar area matches everything else.
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        .containerBackground(.thickMaterial, for: .window)
         .navigationTitle("GlassTunes")
         .navigationSubtitle(hub.nowPlaying.isEmpty ? "Not Playing" : hub.nowPlaying.sourceName)
         .toolbar {
