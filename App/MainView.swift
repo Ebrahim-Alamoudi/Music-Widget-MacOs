@@ -146,34 +146,47 @@ private struct NowPlayingPanel: View {
 
 private struct RecentStripView: View {
     @Environment(PlayerHub.self) private var hub
+    private let slots = 5
 
     var body: some View {
-        let items = hub.recentItems
+        let items = Array(hub.recentItems.prefix(slots))
         VStack(alignment: .leading, spacing: 8) {
-            Text("Recently Played")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-            if items.isEmpty {
-                Text("Songs you play show up here.")
-                    .font(.callout)
-                    .foregroundStyle(.tertiary)
-                    .frame(height: 56, alignment: .center)
-            } else {
-                HStack(spacing: 10) {
-                    ForEach(items.prefix(5)) { item in
-                        Group {
-                            if let image = item.image {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Recently Played")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                if items.isEmpty {
+                    Text("Nothing yet")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .foregroundStyle(.secondary)
+
+            // Equal squares that always fill the panel width; empty slots keep the row balanced.
+            HStack(spacing: 8) {
+                ForEach(0..<slots, id: \.self) { index in
+                    let item = index < items.count ? items[index] : nil
+                    Color.clear
+                        .aspectRatio(1, contentMode: .fit)
+                        .overlay {
+                            if let image = item?.image {
                                 Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
                             } else {
-                                Rectangle().fill(.quaternary)
-                                    .overlay { Image(systemName: "music.note").foregroundStyle(.tertiary) }
+                                Rectangle().fill(.quaternary.opacity(item == nil ? 0.5 : 1))
+                                    .overlay {
+                                        if item != nil {
+                                            Image(systemName: "music.note").foregroundStyle(.tertiary)
+                                        }
+                                    }
                             }
                         }
-                        .frame(width: 56, height: 56)
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        .help("\(item.track.title) — \(item.track.artist)")
-                    }
-                    Spacer(minLength: 0)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(.separator.opacity(0.6), lineWidth: 0.5)
+                        }
+                        .help(item.map { "\($0.track.title) — \($0.track.artist)" } ?? "")
                 }
             }
         }
