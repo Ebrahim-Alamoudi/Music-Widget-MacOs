@@ -4,6 +4,7 @@ import SwiftUI
 struct GlassTunesApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var hub = PlayerHub.shared
+    @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
 
     var body: some Scene {
         Window("GlassTunes", id: "main") {
@@ -38,7 +39,7 @@ struct GlassTunesApp: App {
             }
         }
 
-        MenuBarExtra {
+        MenuBarExtra(isInserted: $showMenuBarIcon) {
             MenuBarContent()
                 .environment(hub)
         } label: {

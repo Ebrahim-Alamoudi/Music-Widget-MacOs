@@ -5,6 +5,7 @@ import WidgetKit
 /// One-page main window: Now Playing on the left, native grouped settings on the right.
 struct MainView: View {
     @Environment(PlayerHub.self) private var hub
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         @Bindable var hub = hub
@@ -34,6 +35,8 @@ struct MainView: View {
         // macOS 27 look: no solid title bar. Content runs underneath, toolbar controls float on glass,
         // and the window itself is translucent so the title bar area matches everything else.
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        // The menu bar icon normally provides this, but it can be hidden.
+        .onAppear { WindowManager.openMainWindow = { [openWindow] in openWindow(id: "main") } }
         .containerBackground(.thickMaterial, for: .window)
         .navigationTitle("GlassTunes")
         .navigationSubtitle(hub.nowPlaying.isEmpty ? "Not Playing" : hub.nowPlaying.sourceName)
@@ -362,15 +365,17 @@ private struct GeneralSection: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @AppStorage("miniPinned") private var miniPinned = true
     @AppStorage("hideDockIcon") private var hideDockIcon = false
+    @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
 
     var body: some View {
-        Section("General") {
+        Section {
             Toggle("Open at login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, enabled in
                     if enabled { try? SMAppService.mainApp.register() } else { try? SMAppService.mainApp.unregister() }
                     launchAtLogin = SMAppService.mainApp.status == .enabled
                 }
             Toggle("Keep mini player on top", isOn: $miniPinned)
+            Toggle("Show in menu bar", isOn: $showMenuBarIcon)
             Toggle("Hide Dock icon", isOn: $hideDockIcon)
                 .onChange(of: hideDockIcon) { _, hide in
                     NSApp.setActivationPolicy(hide ? .accessory : .regular)
@@ -381,6 +386,12 @@ private struct GeneralSection: View {
                     Task { await hub.refresh() }
                     WidgetCenter.shared.reloadAllTimelines()
                 }
+            }
+        } header: {
+            Text("General")
+        } footer: {
+            if hideDockIcon && !showMenuBarIcon {
+                Text("GlassTunes is hidden from the Dock and the menu bar. Open it from Applications or Spotlight to get back here.")
             }
         }
     }
