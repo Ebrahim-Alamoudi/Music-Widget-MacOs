@@ -21,6 +21,7 @@
 		A518DD1A06D13163BFA0F957 /* AppleMusicSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1114AFB3004CEA0BD7660D76 /* AppleMusicSource.swift */; };
 		BF760B03D7228B8CF8C490D8 /* ExpandedPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 686A91246C265F552787A620 /* ExpandedPlayerView.swift */; };
 		C47B7CE3F173AC7FCC91BFFD /* MusicSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A69D5F85C5569B732C6023A /* MusicSource.swift */; };
+		C538A3495D8E910BC5432528 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64F1343E7B652E45049C80F1 /* Assets.xcassets */; };
 		C6C060E7231E8693D52447F7 /* SonosSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014F306A843F0CA1C8DB5C78 /* SonosSource.swift */; };
 		D1D81DCC18C80EFCF2DF50D7 /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 772D47972C5ADE530BBA1924 /* QueueView.swift */; };
 		D2BE0C400D3D05A5D4E30375 /* SpotifySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A231D10C80BA05B629FE581 /* SpotifySource.swift */; };
@@ -184,6 +185,7 @@
 			buildConfigurationList = 830C8A17F62F60366B803555 /* Build configuration list for PBXNativeTarget "GlassTunesWidgets" */;
 			buildPhases = (
 				4C69AEAF7B0D9B9979C80E71 /* Sources */,
+				35AF1A96429C813EFAE04141 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -236,6 +238,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		35AF1A96429C813EFAE04141 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C538A3495D8E910BC5432528 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A6F0DADAAECEB8A43C246677 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -312,6 +322,7 @@
 		12EA1FCEE167140260F01061 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Widget/GlassTunesWidgets.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = Widget/Info.plist;
@@ -475,6 +486,7 @@
 		AF39F29069B1EB16CC698A90 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Widget/GlassTunesWidgets.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = Widget/Info.plist;

@@ -37,6 +37,8 @@ final class PlayerHub {
     @ObservationIgnored private var refreshQueued = false
     @ObservationIgnored private var tick = 0
     @ObservationIgnored private var lastManualSkip = Date.distantPast
+    /// Shuffle/repeat the user just chose; kept briefly while the player catches up.
+    @ObservationIgnored private var pendingToggle: (shuffle: Bool?, repeatMode: RepeatMode?, until: Date)?
     /// Source the user switched to with the widget/mini player switch button (Automatic mode only).
     @ObservationIgnored private var pinnedSource: SourceKind?
     /// Last source Automatic mode showed, so it doesn't flip-flop between players.
@@ -118,6 +120,21 @@ final class PlayerHub {
         let kind = nowPlaying.isEmpty ? (selection == .automatic ? automaticPick ?? .appleMusic : selection) : nowPlaying.source
         guard let target = source(kind) else { return }
         if action == .next || action == .previous { lastManualSkip = Date() }
+        if action == .toggleShuffle || action == .cycleRepeat {
+            if action == .toggleShuffle, let shuffle = nowPlaying.shuffle {
+                nowPlaying.shuffle = !shuffle
+            }
+            if action == .cycleRepeat, let mode = nowPlaying.repeatMode {
+                // Spotify only has repeat on/off.
+                nowPlaying.repeatMode = switch mode {
+                case .off: .all
+                case .all: nowPlaying.source == .spotify ? .off : .one
+                case .one: .off
+                }
+            }
+            pendingToggle = (nowPlaying.shuffle, nowPlaying.repeatMode, Date().addingTimeInterval(2.5))
+            SharedStore.nowPlaying = nowPlaying
+        }
         if action == .playPause, !nowPlaying.isEmpty {
             nowPlaying.state = nowPlaying.isPlaying ? .paused : .playing
             nowPlaying.position = nowPlaying.position(at: Date())
@@ -235,6 +252,14 @@ final class PlayerHub {
             }
         } else {
             np.tint = old.tint
+            if let pending = pendingToggle {
+                if Date() < pending.until {
+                    np.shuffle = pending.shuffle
+                    np.repeatMode = pending.repeatMode
+                } else {
+                    pendingToggle = nil
+                }
+            }
             // Keep the old timestamp while playback is on schedule so unchanged state compares equal.
             if np.state == old.state, abs(old.position(at: np.capturedAt) - np.position) < 2 {
                 np.position = old.position

@@ -71,10 +71,12 @@ final class SonosSource: MusicSource {
             async let settings = SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "GetTransportSettings", arguments: instance)
             async let crossfade = SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "GetCrossfadeMode", arguments: instance)
             async let volume = SOAP.call(host: host, path: "/MediaRenderer/GroupRenderingControl/Control", service: "GroupRenderingControl", action: "GetGroupVolume", arguments: instance)
+            async let media = SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "GetMediaInfo", arguments: instance)
 
             let (t, p, s) = try await (transport, position, settings)
             let fade = (try? await crossfade).flatMap { SOAP.value("CrossfadeMode", in: $0) }
             let groupVolume = (try? await volume).flatMap { SOAP.value("CurrentVolume", in: $0) }
+            let currentURI = (try? await media).flatMap { SOAP.value("CurrentURI", in: $0) } ?? ""
             issue = nil
 
             let trackURI = SOAP.value("TrackURI", in: p) ?? ""
@@ -104,9 +106,13 @@ final class SonosSource: MusicSource {
             np.duration = Self.seconds(SOAP.value("TrackDuration", in: p))
             np.position = Self.seconds(SOAP.value("RelTime", in: p))
             np.trackID = "\(trackURI)|\(np.title)"
-            let mode = SOAP.value("PlayMode", in: s) ?? "NORMAL"
-            np.shuffle = mode.hasPrefix("SHUFFLE")
-            np.repeatMode = mode.hasSuffix("REPEAT_ONE") ? .one : (mode == "REPEAT_ALL" || mode == "SHUFFLE") ? .all : .off
+            // Shuffle/repeat only apply to the speaker's own queue. With Spotify Connect, AirPlay, radio or TV
+            // the speaker accepts the command but ignores it, so leave the buttons disabled.
+            if currentURI.hasPrefix("x-rincon-queue:") {
+                let mode = SOAP.value("PlayMode", in: s) ?? "NORMAL"
+                np.shuffle = mode.hasPrefix("SHUFFLE")
+                np.repeatMode = mode.hasSuffix("REPEAT_ONE") ? .one : (mode == "REPEAT_ALL" || mode == "SHUFFLE") ? .all : .off
+            }
             np.transition = fade == "1" ? "Crossfade" : nil
             np.volume = groupVolume.flatMap { Int($0) }
             np.source = .sonos

@@ -56,6 +56,7 @@ targets:
     sources:
       - Widget
       - Shared
+      - path: App/Assets.xcassets
     info:
       path: Widget/Info.plist
       properties:
@@ -72,3 +73,4 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ibrahim.glasstunes.widgets
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
