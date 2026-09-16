@@ -11,8 +11,8 @@ settings:
     DEVELOPMENT_TEAM: 9TW49VDW3X
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.0.1"
+    CURRENT_PROJECT_VERSION: "2"
     ENABLE_HARDENED_RUNTIME: YES
     # Team-prefixed App Group: works on macOS without registering it in the developer portal.
     GT_APP_GROUP: "$(DEVELOPMENT_TEAM).com.ibrahim.glasstunes"
@@ -28,6 +28,8 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: GlassTunes
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.music
         NSAppleEventsUsageDescription: GlassTunes reads what's playing in Music, Spotify and YouTube Music tabs, and sends play, pause and skip commands from your widgets.
         NSLocalNetworkUsageDescription: GlassTunes finds your Sonos speakers to show and control what they're playing.
@@ -61,6 +63,8 @@ targets:
       path: Widget/Info.plist
       properties:
         CFBundleDisplayName: GlassTunes
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         GTAppGroupID: $(GT_APP_GROUP)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
