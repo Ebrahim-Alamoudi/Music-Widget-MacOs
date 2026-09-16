@@ -1,12 +1,12 @@
 # GlassTunes
 
-Liquid Glass music widgets for macOS 26+ (built with Xcode 27 on macOS 27).
+Liquid Glass music widgets for macOS 14 and later (built with Xcode 27 on macOS 27).
 Works with **Apple Music, Spotify, YouTube Music (Chrome/Safari/Brave/Edge) and Sonos**.
 Click any widget to open a floating Liquid Glass mini player with animated album art.
 
 ## Install
 
-Download the latest **GlassTunes.dmg** from [Releases](https://github.com/Ebrahim-Alamoudi/Music-Widget-MacOs/releases/latest) and drag it into Applications. It needs macOS 26 or later and runs on Apple Silicon and Intel.
+Download the latest **GlassTunes.dmg** from [Releases](https://github.com/Ebrahim-Alamoudi/Music-Widget-MacOs/releases/latest) and drag it into Applications. It needs macOS 14 Sonoma or later and runs on Apple Silicon and Intel. Liquid Glass appears on macOS 26 and later; older systems get a frosted-glass look.
 
 This build isn't notarized yet. The first time you open it, go to **System Settings → Privacy & Security → Open Anyway**, or run:
 

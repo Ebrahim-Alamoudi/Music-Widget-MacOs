@@ -56,6 +56,18 @@ struct PlayerSnapshot {
     }
 }
 
+extension Image {
+    /// Grey artwork in tinted widget mode (macOS 15+); older systems keep full color.
+    @ViewBuilder
+    func desaturatedWhenAccented() -> some View {
+        if #available(macOS 15.0, *) {
+            widgetAccentedRenderingMode(.desaturated)
+        } else {
+            self
+        }
+    }
+}
+
 // MARK: - Liquid Glass primitives
 // Hand-built glass (tinted fill + specular gradient + light rim) because widgets are rendered
 // as static snapshots, where live materials and `glassEffect` aren't reliable.
@@ -148,7 +160,7 @@ struct ArtworkView: View {
             if let image {
                 Image(nsImage: image)
                     .resizable()
-                    .widgetAccentedRenderingMode(.desaturated)
+                    .desaturatedWhenAccented()
                     .aspectRatio(contentMode: .fill)
             } else {
                 LinearGradient(colors: [tint, tint.opacity(0.45)], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -176,7 +188,7 @@ struct SourceBadge: View {
             if let icon = snapshot.sourceIcon {
                 Image(nsImage: icon)
                     .resizable()
-                    .widgetAccentedRenderingMode(.desaturated)
+                    .desaturatedWhenAccented()
             } else {
                 Image(systemName: snapshot.nowPlaying.source.symbol)
                     .font(.system(size: size * 0.55, weight: .semibold))

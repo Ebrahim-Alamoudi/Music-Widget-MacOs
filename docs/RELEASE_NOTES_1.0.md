@@ -3,7 +3,7 @@
 Liquid Glass music widgets and a floating mini player for macOS. They work with **Apple Music, Spotify, YouTube Music and Sonos**.
 
 ## Requirements
-- macOS 26 or later (built and tested on macOS 27)
+- macOS 14 Sonoma or later. Liquid Glass shows on macOS 26 and 27; macOS 14 and 15 get the closest frosted-glass look.
 - Apple Silicon or Intel Mac
 
 ## Install
@@ -23,7 +23,7 @@ Liquid Glass music widgets and a floating mini player for macOS. They work with 
 ## Features
 - **Three widgets:** Now Playing (small), Player (medium) and Music Deck (large), each in Artwork Tint, Frosted or Clear glass.
 - **Sources:** Automatic (prefers music playing on the Mac over Sonos), Apple Music, Spotify, YouTube Music (Chrome, Safari, Brave or Edge) and Sonos rooms. The switch button on a widget moves between active players.
-- **Mini player and full player:** real Liquid Glass, with Apple Music's animated album art when the album has it.
+- **Mini player and full player:** glass panels, with Apple Music's animated album art when the album has it.
 - **Up Next queue:** for Apple Music, Sonos and YouTube Music. Click a song to play it.
 - **Controls:** shuffle, repeat, volume, seek, and an AutoMix/Crossfade indicator.
 - **Menu bar:** show an icon, the song title, or both, or hide it. The Dock icon can be hidden too.

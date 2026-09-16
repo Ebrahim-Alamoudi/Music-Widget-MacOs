@@ -33,7 +33,7 @@ struct QueueButton: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .glass(interactive: true, in: Circle())
         .help("Up Next")
         .popover(isPresented: $isShowing, arrowEdge: .bottom) {
             QueueView()

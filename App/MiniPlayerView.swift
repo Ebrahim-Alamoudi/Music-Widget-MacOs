@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Widget-sized floating player on real Liquid Glass (the window's NSGlassEffectView sits behind it).
+/// Widget-sized floating player on Liquid Glass (the window's glass view sits behind it).
 struct MiniPlayerView: View {
     static let size = CGSize(width: 340, height: 156)
 
@@ -43,7 +43,7 @@ struct MiniPlayerView: View {
         .padding(14)
         .frame(width: Self.size.width, height: Self.size.height)
         .contentShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .gesture(WindowDragGesture())
+        .windowDraggable()
         .focusEffectDisabled()
         .onHover { hovering = $0 }
         .animation(.spring(duration: 0.45), value: np.isPlaying)
@@ -77,7 +77,7 @@ struct MiniPlayerView: View {
                     .font(.system(size: 9, weight: .bold))
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
-                    .glassEffect(.regular.tint(tint.opacity(0.5)), in: .capsule)
+                    .glass(tint: tint.opacity(0.5), in: Capsule())
                     .padding(6)
                     .transition(.scale.combined(with: .opacity))
             }
@@ -152,7 +152,7 @@ private struct HeaderButton: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .glass(interactive: true, in: Circle())
         .help(help)
     }
 }

@@ -52,7 +52,7 @@ struct ExpandedPlayerView: View {
             PlayerBackground(artwork: hub.artwork, tint: tint, tallVideo: tallVideo,
                              isPlaying: np.isPlaying, trackID: np.trackID)
                 // Empty areas move the window; controls in front keep their own gestures.
-                .gesture(WindowDragGesture())
+                .windowDraggable()
         }
         .clipped()
         .frame(width: Self.size.width, height: Self.size.height)
@@ -75,7 +75,7 @@ struct ExpandedPlayerView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .glassEffect(.clear, in: .capsule)
+        .glass(.clear, in: Capsule())
     }
 
     private func hero(side: CGFloat) -> some View {
@@ -125,7 +125,7 @@ struct ExpandedPlayerView: View {
                     .frame(width: 32, height: 32)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .glass(interactive: true, in: Circle())
         }
     }
 
@@ -137,7 +137,7 @@ struct ExpandedPlayerView: View {
                 .font(.system(size: 11, weight: .semibold))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .glassEffect(.regular.tint(tint.opacity(0.5)), in: .capsule)
+                .glass(tint: tint.opacity(0.5), in: Capsule())
                 .transition(.scale.combined(with: .opacity))
         } else if let transition = np.transition {
             Label(transition, systemImage: transition == "AutoMix" ? "infinity" : "arrow.triangle.merge")
@@ -145,7 +145,7 @@ struct ExpandedPlayerView: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .glassEffect(.clear, in: .capsule)
+                .glass(.clear, in: Capsule())
         }
     }
 
@@ -174,7 +174,7 @@ struct ExpandedPlayerView: View {
     }
 
     private var bottomBar: some View {
-        GlassEffectContainer(spacing: 10) {
+        GlassGroup(spacing: 10) {
             HStack(spacing: 10) {
                 ToggleGlyph(symbol: "shuffle", isOn: np.shuffle == true, isEnabled: np.shuffle != nil) {
                     hub.perform(.toggleShuffle)
@@ -246,7 +246,7 @@ struct ToggleGlyph: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .glass(interactive: true, in: Circle())
         .animation(.spring(duration: 0.3), value: isOn)
         .accessibilityValue(isOn ? "On" : "Off")
         .disabled(!isEnabled)
@@ -288,7 +288,7 @@ struct SourceMenu: View {
         .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .glass(interactive: true, in: Capsule())
     }
 }
 

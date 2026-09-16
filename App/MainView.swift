@@ -34,10 +34,9 @@ struct MainView: View {
         .frame(minWidth: 1060, minHeight: 680)
         // macOS 27 look: no solid title bar. Content runs underneath, toolbar controls float on glass,
         // and the window itself is translucent so the title bar area matches everything else.
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        .translucentWindowChrome()
         // The menu bar icon normally provides this, but it can be hidden.
         .onAppear { WindowManager.openMainWindow = { [openWindow] in openWindow(id: "main") } }
-        .containerBackground(.thickMaterial, for: .window)
         .navigationTitle("GlassTunes")
         .navigationSubtitle(hub.nowPlaying.isEmpty ? "Not Playing" : hub.nowPlaying.sourceName)
         .toolbar {

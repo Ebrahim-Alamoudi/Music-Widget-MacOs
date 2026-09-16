@@ -45,7 +45,7 @@ enum WindowManager {
     }
 
     static func setMiniTint(_ color: Color) {
-        miniPlayer?.glass.tintColor = NSColor(color).withAlphaComponent(0.25)
+        if let glass = miniPlayer?.glass { GlassBackdropView.setTint(NSColor(color).withAlphaComponent(0.25), on: glass) }
     }
 
     static func setMiniPinned(_ pinned: Bool) {
@@ -76,7 +76,7 @@ enum WindowManager {
 @MainActor
 private final class GlassPanel {
     let panel: KeyablePanel
-    let glass: NSGlassEffectView
+    let glass: NSView
     private var closeObserver: NSObjectProtocol?
     private let zoomAction: () -> Void
 
@@ -97,10 +97,9 @@ private final class GlassPanel {
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-
-        glass = NSGlassEffectView(frame: glassFrame)
-        glass.cornerRadius = cornerRadius
-        glass.style = .regular
+        if #unavailable(macOS 15.0) {
+            panel.isMovableByWindowBackground = true // no WindowDragGesture before macOS 15
+        }
 
         var buttons: [NSButton] = []
         let container = HoverView(frame: frame, hoverRect: glassFrame) { inside in
@@ -129,7 +128,7 @@ private final class GlassPanel {
         hosting.layer?.cornerRadius = cornerRadius
         hosting.layer?.cornerCurve = .continuous
         hosting.layer?.masksToBounds = true
-        glass.contentView = hosting
+        glass = GlassBackdropView.make(frame: glassFrame, cornerRadius: cornerRadius, content: hosting)
         container.addSubview(glass)
 
         var x = glassFrame.minX + 18

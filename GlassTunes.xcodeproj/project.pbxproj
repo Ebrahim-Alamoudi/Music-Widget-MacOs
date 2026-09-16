@@ -26,6 +26,7 @@
 		D2BE0C400D3D05A5D4E30375 /* SpotifySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A231D10C80BA05B629FE581 /* SpotifySource.swift */; };
 		D3D0849092EA4C98AA807B4F /* Artwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599BDDA8B708CE0185CB4B8A /* Artwork.swift */; };
 		E945C631F118E0561517EE4E /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
+		EA9AB52CCD8B4F6F2484D587 /* Compat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FF236436B75830007C897E /* Compat.swift */; };
 		EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6346E462F296242E8DE501F1 /* GlassTunesApp.swift */; };
 		F0FC6051EC7EA2219AD33AF4 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
 		F26786C8D22120029947DCDE /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
@@ -76,6 +77,7 @@
 		AAD41582AF0AA8506F8F319C /* GlassTunes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GlassTunes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC2588B7ADAF4A615EF92BD6 /* GlassTunes.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassTunes.entitlements; sourceTree = "<group>"; };
 		B0F54389515DD06426FEBB5A /* YouTubeMusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeMusicSource.swift; sourceTree = "<group>"; };
+		B2FF236436B75830007C897E /* Compat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compat.swift; sourceTree = "<group>"; };
 		B9E467DF6BF975538BBE30C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C3FF2941859A768E066577AE /* GlassTunesWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassTunesWidgets.entitlements; sourceTree = "<group>"; };
 		C6317B59DFBB510104BC500B /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 			children = (
 				599BDDA8B708CE0185CB4B8A /* Artwork.swift */,
 				64F1343E7B652E45049C80F1 /* Assets.xcassets */,
+				B2FF236436B75830007C897E /* Compat.swift */,
 				686A91246C265F552787A620 /* ExpandedPlayerView.swift */,
 				AC2588B7ADAF4A615EF92BD6 /* GlassTunes.entitlements */,
 				6346E462F296242E8DE501F1 /* GlassTunesApp.swift */,
@@ -250,6 +253,7 @@
 			files = (
 				A518DD1A06D13163BFA0F957 /* AppleMusicSource.swift in Sources */,
 				D3D0849092EA4C98AA807B4F /* Artwork.swift in Sources */,
+				EA9AB52CCD8B4F6F2484D587 /* Compat.swift in Sources */,
 				BF760B03D7228B8CF8C490D8 /* ExpandedPlayerView.swift in Sources */,
 				EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */,
 				9E8DFE746B9D98FBCE5419B3 /* MainView.swift in Sources */,
@@ -377,7 +381,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GT_APP_GROUP = "$(DEVELOPMENT_TEAM).com.ibrahim.glasstunes";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -456,7 +460,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GT_APP_GROUP = "$(DEVELOPMENT_TEAM).com.ibrahim.glasstunes";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

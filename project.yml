@@ -3,7 +3,7 @@ name: GlassTunes
 options:
   bundleIdPrefix: com.ibrahim
   deploymentTarget:
-    macOS: "26.0"
+    macOS: "14.0"
   createIntermediateGroups: true
 
 settings:
