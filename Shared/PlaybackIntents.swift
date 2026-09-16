@@ -78,6 +78,26 @@ struct NextSourceIntent: AppIntent {
     }
 }
 
+struct VolumeDownIntent: AppIntent {
+    static let title: LocalizedStringResource = "Volume Down"
+    static let isDiscoverable = false
+
+    func perform() async throws -> some IntentResult {
+        await send(.volumeDown)
+        return .result()
+    }
+}
+
+struct VolumeUpIntent: AppIntent {
+    static let title: LocalizedStringResource = "Volume Up"
+    static let isDiscoverable = false
+
+    func perform() async throws -> some IntentResult {
+        await send(.volumeUp)
+        return .result()
+    }
+}
+
 struct PreviousTrackIntent: AppIntent {
     static let title: LocalizedStringResource = "Previous Track"
     static let isDiscoverable = false

@@ -100,9 +100,16 @@ final class PlayerHub {
     // MARK: Commands
 
     func handle(_ command: PlayerCommand) {
-        if command == .nextSource {
+        switch command {
+        case .nextSource:
             cycleSource()
-        } else if let action = PlayerAction(command) {
+        case .volumeDown, .volumeUp:
+            guard let volume = nowPlaying.volume else { return }
+            let step = command == .volumeUp ? 6 : -6
+            nowPlaying.volume = min(100, max(0, volume + step))
+            perform(.setVolume(nowPlaying.volume ?? volume))
+        default:
+            guard let action = PlayerAction(command) else { return }
             perform(action)
         }
     }
@@ -240,6 +247,7 @@ final class PlayerHub {
         let seeked = np.capturedAt != old.capturedAt && np.state == old.state && !trackChanged
         let widgetsNeedReload = trackChanged || seeked || np.state != old.state || np.source != old.source
             || np.shuffle != old.shuffle || np.repeatMode != old.repeatMode || np.availableSources != old.availableSources
+            || np.volume != old.volume
         nowPlaying = np
         SharedStore.nowPlaying = np
         if widgetsNeedReload { WidgetCenter.shared.reloadAllTimelines() }

@@ -288,6 +288,7 @@ extension EnvironmentValues {
 struct TrackProgress: View {
     let nowPlaying: NowPlaying
     var showTimes = true
+    var barHeight: CGFloat = 4
     @Environment(\.isStaticWidgetPreview) private var isStaticPreview
 
     private var isLive: Bool { nowPlaying.isPlaying && nowPlaying.duration > 0 && !isStaticPreview }
@@ -305,6 +306,7 @@ struct TrackProgress: View {
                 .progressViewStyle(.linear)
                 .tint(Color.primary)
                 .labelsHidden()
+                .scaleEffect(x: 1, y: max(1, barHeight / 4), anchor: .center)
             } else {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
@@ -313,7 +315,7 @@ struct TrackProgress: View {
                             .frame(width: geo.size.width * min(1, position / total))
                     }
                 }
-                .frame(height: 4)
+                .frame(height: barHeight)
             }
 
             if showTimes {
@@ -451,84 +453,69 @@ struct MediumPlayerView: View {
     }
 }
 
-/// Apple Music's full player, condensed.
+/// iPhone Control Center's expanded Now Playing card.
 struct LargePlayerView: View {
     let snapshot: PlayerSnapshot
 
     var body: some View {
         let np = snapshot.nowPlaying
-        VStack(alignment: .leading, spacing: 0) {
-            if np.isEmpty {
-                NotPlayingView(snapshot: snapshot, horizontal: true)
-                    .frame(height: 170)
-            } else {
-                HStack(alignment: .top, spacing: 14) {
-                    ArtworkView(image: snapshot.artwork, tint: snapshot.tint, corner: 16)
-                        .frame(width: 150, height: 150)
-                        .shadow(color: .black.opacity(0.3), radius: 14, y: 8)
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 6) {
-                            SourceSwitcher(snapshot: snapshot, size: 18)
-                            Text(np.sourceName)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
-                        Spacer(minLength: 0)
-                        TrackTitles(nowPlaying: np, titleSize: 18, titleLines: 2)
-                        if !np.album.isEmpty {
-                            Text(np.album)
-                                .font(.system(size: 12))
-                                .foregroundStyle(.tertiary)
-                                .lineLimit(1)
-                        }
-                    }
-                    .frame(height: 150)
+        VStack(spacing: 0) {
+            // Artwork, titles, and the route/source button in the corner.
+            HStack(alignment: .center, spacing: 14) {
+                ArtworkView(image: np.isEmpty ? nil : snapshot.artwork, tint: snapshot.tint, corner: 12)
+                    .frame(width: 76, height: 76)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(np.isEmpty ? "Not Playing" : np.title)
+                        .font(.system(size: 17, weight: .semibold))
+                        .lineLimit(1)
+                        .widgetAccentable()
+                    Text(np.isEmpty ? (np.sourceName.isEmpty ? "Music" : np.sourceName) : np.artist)
+                        .font(.system(size: 15))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
-                Spacer(minLength: 12)
-                TrackProgress(nowPlaying: np)
-                    .overlay(alignment: .bottom) { TransitionBadge(nowPlaying: np).offset(y: 2) }
-                Spacer(minLength: 6)
-                HStack(spacing: 0) {
-                    if np.shuffle != nil {
-                        GlyphButton(intent: ToggleShuffleIntent(), symbol: "shuffle", size: 12, active: np.shuffle == true, isToggle: true)
-                    }
-                    TransportRow(snapshot: snapshot, size: 26)
-                    if let mode = np.repeatMode {
-                        GlyphButton(intent: CycleRepeatIntent(), symbol: mode.symbol, size: 12, active: mode != .off, isToggle: true)
-                    }
-                }
+                Spacer(minLength: 4)
+                SourceSwitcher(snapshot: snapshot, size: 26)
             }
-            Spacer(minLength: 10)
-            RecentStrip(snapshot: snapshot)
+
+            Spacer(minLength: 16)
+
+            TrackProgress(nowPlaying: np, barHeight: 7)
+                .opacity(np.isEmpty ? 0.4 : 1)
+                .overlay(alignment: .bottom) { TransitionBadge(nowPlaying: np).offset(y: 3) }
+
+            Spacer(minLength: 12)
+
+            TransportRow(snapshot: snapshot, size: 30)
+
+            Spacer(minLength: 12)
+
+            VolumeStrip(volume: np.volume)
         }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 6)
     }
 }
 
-struct RecentStrip: View {
-    let snapshot: PlayerSnapshot
+/// Control Center volume row. Widgets can't be dragged, so the speaker icons step the volume.
+struct VolumeStrip: View {
+    let volume: Int?
 
     var body: some View {
         HStack(spacing: 10) {
-            Text("Recently\nPlayed")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: true, vertical: false)
-            if snapshot.recent.isEmpty {
-                Text("Songs you play show up here.")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-                Spacer(minLength: 0)
-            } else {
-                ForEach(snapshot.recent) { item in
-                    ArtworkView(image: item.image, tint: snapshot.tint, corner: 7)
-                        .frame(width: 44, height: 44)
+            GlyphButton(intent: VolumeDownIntent(), symbol: "speaker.fill", size: 12, active: volume != nil)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(.primary.opacity(0.2))
+                    Capsule().fill(.primary)
+                        .frame(width: geo.size.width * CGFloat(volume ?? 0) / 100)
                 }
-                Spacer(minLength: 0)
             }
+            .frame(height: 7)
+            .widgetAccentable()
+            GlyphButton(intent: VolumeUpIntent(), symbol: "speaker.wave.3.fill", size: 12, active: volume != nil)
         }
-        .padding(8)
-        .liquidGlass(RoundedRectangle(cornerRadius: 14, style: .continuous), intensity: 0.6)
+        .opacity(volume == nil ? 0.4 : 1)
     }
 }
 

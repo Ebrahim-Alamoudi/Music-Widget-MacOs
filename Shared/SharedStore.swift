@@ -99,7 +99,7 @@ struct RecentTrack: Codable, Identifiable, Equatable {
 /// Widgets run sandboxed and can't talk to other apps, so they post a Darwin notification
 /// that the GlassTunes helper app listens for.
 enum PlayerCommand: String, CaseIterable {
-    case playPause, next, previous, shuffle, repeatMode, nextSource
+    case playPause, next, previous, shuffle, repeatMode, nextSource, volumeDown, volumeUp
 
     var notificationName: String { "com.ibrahim.glasstunes.command.\(rawValue)" }
 
