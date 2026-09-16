@@ -166,11 +166,20 @@ private struct MiniToggle: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                .foregroundStyle(isOn ? AnyShapeStyle(Color.black.opacity(0.85)) : AnyShapeStyle(.secondary))
                 .frame(width: 24, height: 24)
-                .contentShape(Rectangle())
+                .background {
+                    Circle()
+                        .fill(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+                        .opacity(isOn ? 1 : 0)
+                        .scaleEffect(isOn ? 1 : 0.6)
+                }
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .animation(.spring(duration: 0.3), value: isOn)
+        .accessibilityValue(isOn ? "On" : "Off")
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.3)
     }

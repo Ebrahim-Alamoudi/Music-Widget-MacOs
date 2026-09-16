@@ -232,11 +232,22 @@ struct ToggleGlyph: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isOn ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
+                // On: dark glyph on a solid white disc, like Apple Music.
+                .foregroundStyle(isOn ? AnyShapeStyle(Color.black.opacity(0.85)) : AnyShapeStyle(.primary))
                 .frame(width: 38, height: 38)
+                .background {
+                    Circle()
+                        .fill(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
+                        .opacity(isOn ? 1 : 0)
+                        .scaleEffect(isOn ? 1 : 0.6)
+                }
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .glassEffect(isOn ? .regular.tint(.accentColor).interactive() : .regular.interactive(), in: .circle)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .animation(.spring(duration: 0.3), value: isOn)
+        .accessibilityValue(isOn ? "On" : "Off")
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.35)
     }

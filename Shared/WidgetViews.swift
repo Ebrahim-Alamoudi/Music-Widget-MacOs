@@ -221,18 +221,32 @@ struct GlyphButton<I: AppIntent>: View {
     let symbol: String
     var size: CGFloat = 20
     var active = true
+    /// Shuffle/repeat: when on, drawn as a dark glyph on a white disc.
+    var isToggle = false
 
     var body: some View {
         Button(intent: intent) {
             Image(systemName: symbol)
                 .font(.system(size: size, weight: .semibold))
                 .contentTransition(.symbolEffect(.replace))
-                .foregroundStyle(active ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary))
+                .foregroundStyle(foreground)
                 .frame(width: size * 1.7, height: size * 1.5)
+                .background {
+                    if isToggle && active {
+                        Circle().fill(.white).frame(width: size * 1.9, height: size * 1.9)
+                    }
+                }
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .widgetAccentable()
+    }
+}
+
+extension GlyphButton {
+    private var foreground: AnyShapeStyle {
+        if isToggle { return active ? AnyShapeStyle(Color.black.opacity(0.85)) : AnyShapeStyle(.secondary) }
+        return active ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary)
     }
 }
 
@@ -465,11 +479,11 @@ struct LargePlayerView: View {
                 Spacer(minLength: 6)
                 HStack(spacing: 0) {
                     if np.shuffle != nil {
-                        GlyphButton(intent: ToggleShuffleIntent(), symbol: "shuffle", size: 13, active: np.shuffle == true)
+                        GlyphButton(intent: ToggleShuffleIntent(), symbol: "shuffle", size: 12, active: np.shuffle == true, isToggle: true)
                     }
                     TransportRow(snapshot: snapshot, size: 26)
                     if let mode = np.repeatMode {
-                        GlyphButton(intent: CycleRepeatIntent(), symbol: mode.symbol, size: 13, active: mode != .off)
+                        GlyphButton(intent: CycleRepeatIntent(), symbol: mode.symbol, size: 12, active: mode != .off, isToggle: true)
                     }
                 }
             }
