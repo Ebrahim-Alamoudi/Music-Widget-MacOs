@@ -3,6 +3,8 @@ import SwiftUI
 
 /// Apple Music–style full player with animated album art.
 struct ExpandedPlayerView: View {
+    static let size = CGSize(width: 380, height: 700)
+
     @Environment(PlayerHub.self) private var hub
 
     private var np: NowPlaying { hub.nowPlaying }
@@ -49,9 +51,12 @@ struct ExpandedPlayerView: View {
         .background {
             PlayerBackground(artwork: hub.artwork, tint: tint, tallVideo: tallVideo,
                              isPlaying: np.isPlaying, trackID: np.trackID)
+                // Empty areas move the window; controls in front keep their own gestures.
+                .gesture(WindowDragGesture())
         }
         .clipped()
-        .frame(minWidth: 320, idealWidth: 380, minHeight: 600, idealHeight: 700)
+        .frame(width: Self.size.width, height: Self.size.height)
+        .focusEffectDisabled()
         .environment(\.colorScheme, .dark)
         .animation(.spring(duration: 0.5), value: np.isPlaying)
         .animation(.easeInOut(duration: hub.isMixing ? 1.6 : 0.4), value: np.trackID)
