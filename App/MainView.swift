@@ -398,7 +398,17 @@ private struct WidgetsSection: View {
         } header: {
             Text("Widgets")
         } footer: {
-            Text("Right-click the desktop › Edit Widgets › GlassTunes. Right-click a widget › Edit to change its glass.")
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Right-click the desktop › Edit Widgets › GlassTunes. Right-click a widget › Edit to change its glass.")
+                if style == .clear {
+                    // macOS draws its own panel behind desktop widgets; only the system style makes it clear.
+                    Text("For fully clear widgets, set System Settings › Appearance › Icon & widget style to **Clear**. With Dark or Default, macOS draws its own panel behind every widget when the desktop is active.")
+                    Button("Open Appearance Settings") {
+                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Appearance-Settings.extension")!)
+                    }
+                    .controlSize(.small)
+                }
+            }
         }
     }
 }
