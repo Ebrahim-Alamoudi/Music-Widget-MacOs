@@ -1,0 +1,75 @@
+name: GlassTunes
+
+options:
+  bundleIdPrefix: com.ibrahim
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: 9TW49VDW3X
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_HARDENED_RUNTIME: YES
+    # Team-prefixed App Group: works on macOS without registering it in the developer portal.
+    GT_APP_GROUP: "$(DEVELOPMENT_TEAM).com.ibrahim.glasstunes"
+
+targets:
+  GlassTunes:
+    type: application
+    platform: macOS
+    sources:
+      - App
+      - Shared
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: GlassTunes
+        LSApplicationCategoryType: public.app-category.music
+        NSAppleEventsUsageDescription: GlassTunes reads what's playing in Music, Spotify and YouTube Music tabs, and sends play, pause and skip commands from your widgets.
+        NSLocalNetworkUsageDescription: GlassTunes finds your Sonos speakers to show and control what they're playing.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        GTAppGroupID: $(GT_APP_GROUP)
+        CFBundleURLTypes:
+          - CFBundleURLName: com.ibrahim.glasstunes
+            CFBundleURLSchemes: [glasstunes]
+    entitlements:
+      path: App/GlassTunes.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - $(GT_APP_GROUP)
+        com.apple.security.automation.apple-events: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ibrahim.glasstunes
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - target: GlassTunesWidgets
+
+  GlassTunesWidgets:
+    type: app-extension
+    platform: macOS
+    sources:
+      - Widget
+      - Shared
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: GlassTunes
+        GTAppGroupID: $(GT_APP_GROUP)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widget/GlassTunesWidgets.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.application-groups:
+          - $(GT_APP_GROUP)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ibrahim.glasstunes.widgets

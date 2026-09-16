@@ -1,0 +1,518 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		141916BD05D50B87FAD209EA /* YouTubeMusicSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F54389515DD06426FEBB5A /* YouTubeMusicSource.swift */; };
+		1967A624169B864921037E42 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64F1343E7B652E45049C80F1 /* Assets.xcassets */; };
+		1D2585479EEA336DB44EC889 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EAB69AC413C6610B482FC13 /* WidgetViews.swift */; };
+		262DCF0F92FAC88511F4BF1E /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EAB69AC413C6610B482FC13 /* WidgetViews.swift */; };
+		39C8BBB9FEDC4BD1E130C7CA /* GlassTunesWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76BE9B6A30D43671C41A2C2E /* GlassTunesWidgets.swift */; };
+		3F77C91A022C16DC15E9C442 /* GlassTunesWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 58B431777965F9972C72598F /* GlassTunesWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		457FC5F0C8F0D3D6006362F3 /* MiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F544C4A14F6C6FD9C674F92 /* MiniPlayerView.swift */; };
+		508935864513D0CEACD3D4B8 /* PlayerHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */; };
+		80DAF440DDFC45D8D542576B /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
+		920190EDCB58B84837A57151 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6317B59DFBB510104BC500B /* WindowManager.swift */; };
+		9E8DFE746B9D98FBCE5419B3 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33037F37C3706EF3ACB6E27E /* MainView.swift */; };
+		A518DD1A06D13163BFA0F957 /* AppleMusicSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1114AFB3004CEA0BD7660D76 /* AppleMusicSource.swift */; };
+		BF760B03D7228B8CF8C490D8 /* ExpandedPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 686A91246C265F552787A620 /* ExpandedPlayerView.swift */; };
+		C47B7CE3F173AC7FCC91BFFD /* MusicSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A69D5F85C5569B732C6023A /* MusicSource.swift */; };
+		C6C060E7231E8693D52447F7 /* SonosSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014F306A843F0CA1C8DB5C78 /* SonosSource.swift */; };
+		D2BE0C400D3D05A5D4E30375 /* SpotifySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A231D10C80BA05B629FE581 /* SpotifySource.swift */; };
+		D3D0849092EA4C98AA807B4F /* Artwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599BDDA8B708CE0185CB4B8A /* Artwork.swift */; };
+		E945C631F118E0561517EE4E /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
+		EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6346E462F296242E8DE501F1 /* GlassTunesApp.swift */; };
+		F0FC6051EC7EA2219AD33AF4 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0041DAF775E1380F12BA23 /* SharedStore.swift */; };
+		F26786C8D22120029947DCDE /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B0916B05A360DD81DA17FB19 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 682045A4570D5FD3FB5F3850 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B6FA354F37864B9FEDB36405;
+			remoteInfo = GlassTunesWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		57E29AEEBA75180C9C69F004 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3F77C91A022C16DC15E9C442 /* GlassTunesWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		014F306A843F0CA1C8DB5C78 /* SonosSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SonosSource.swift; sourceTree = "<group>"; };
+		0A69D5F85C5569B732C6023A /* MusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicSource.swift; sourceTree = "<group>"; };
+		1114AFB3004CEA0BD7660D76 /* AppleMusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicSource.swift; sourceTree = "<group>"; };
+		1F544C4A14F6C6FD9C674F92 /* MiniPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniPlayerView.swift; sourceTree = "<group>"; };
+		2A231D10C80BA05B629FE581 /* SpotifySource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifySource.swift; sourceTree = "<group>"; };
+		2EAB69AC413C6610B482FC13 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
+		33037F37C3706EF3ACB6E27E /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerHub.swift; sourceTree = "<group>"; };
+		58B431777965F9972C72598F /* GlassTunesWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GlassTunesWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		599BDDA8B708CE0185CB4B8A /* Artwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Artwork.swift; sourceTree = "<group>"; };
+		5B768BF743D1163582852501 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5F0041DAF775E1380F12BA23 /* SharedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStore.swift; sourceTree = "<group>"; };
+		6346E462F296242E8DE501F1 /* GlassTunesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassTunesApp.swift; sourceTree = "<group>"; };
+		64F1343E7B652E45049C80F1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		686A91246C265F552787A620 /* ExpandedPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandedPlayerView.swift; sourceTree = "<group>"; };
+		76BE9B6A30D43671C41A2C2E /* GlassTunesWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassTunesWidgets.swift; sourceTree = "<group>"; };
+		AAD41582AF0AA8506F8F319C /* GlassTunes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GlassTunes.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC2588B7ADAF4A615EF92BD6 /* GlassTunes.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassTunes.entitlements; sourceTree = "<group>"; };
+		B0F54389515DD06426FEBB5A /* YouTubeMusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeMusicSource.swift; sourceTree = "<group>"; };
+		B9E467DF6BF975538BBE30C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C3FF2941859A768E066577AE /* GlassTunesWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassTunesWidgets.entitlements; sourceTree = "<group>"; };
+		C6317B59DFBB510104BC500B /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
+		E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackIntents.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1BEA95CFD14297E02CB11264 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */,
+				5F0041DAF775E1380F12BA23 /* SharedStore.swift */,
+				2EAB69AC413C6610B482FC13 /* WidgetViews.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		3D896F8A4BBB61B82B072D59 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				C3FF2941859A768E066577AE /* GlassTunesWidgets.entitlements */,
+				76BE9B6A30D43671C41A2C2E /* GlassTunesWidgets.swift */,
+				B9E467DF6BF975538BBE30C0 /* Info.plist */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
+		4A201123E80A14A32B9562C3 = {
+			isa = PBXGroup;
+			children = (
+				BF19818D4D0205F72D9BA297 /* App */,
+				1BEA95CFD14297E02CB11264 /* Shared */,
+				3D896F8A4BBB61B82B072D59 /* Widget */,
+				A911E45FCE66BB3AC0C3C83F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		95782D317044619893CE5D2A /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				1114AFB3004CEA0BD7660D76 /* AppleMusicSource.swift */,
+				0A69D5F85C5569B732C6023A /* MusicSource.swift */,
+				014F306A843F0CA1C8DB5C78 /* SonosSource.swift */,
+				2A231D10C80BA05B629FE581 /* SpotifySource.swift */,
+				B0F54389515DD06426FEBB5A /* YouTubeMusicSource.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		A911E45FCE66BB3AC0C3C83F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AAD41582AF0AA8506F8F319C /* GlassTunes.app */,
+				58B431777965F9972C72598F /* GlassTunesWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF19818D4D0205F72D9BA297 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				599BDDA8B708CE0185CB4B8A /* Artwork.swift */,
+				64F1343E7B652E45049C80F1 /* Assets.xcassets */,
+				686A91246C265F552787A620 /* ExpandedPlayerView.swift */,
+				AC2588B7ADAF4A615EF92BD6 /* GlassTunes.entitlements */,
+				6346E462F296242E8DE501F1 /* GlassTunesApp.swift */,
+				5B768BF743D1163582852501 /* Info.plist */,
+				33037F37C3706EF3ACB6E27E /* MainView.swift */,
+				1F544C4A14F6C6FD9C674F92 /* MiniPlayerView.swift */,
+				561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */,
+				C6317B59DFBB510104BC500B /* WindowManager.swift */,
+				95782D317044619893CE5D2A /* Sources */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		70CDFDE46D9324F11ACFC010 /* GlassTunes */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4194384DEC71C3D8B982AB02 /* Build configuration list for PBXNativeTarget "GlassTunes" */;
+			buildPhases = (
+				2AAD6B48448F85268AE1CD82 /* Sources */,
+				A6F0DADAAECEB8A43C246677 /* Resources */,
+				57E29AEEBA75180C9C69F004 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4E5367AEB2EA076B49157943 /* PBXTargetDependency */,
+			);
+			name = GlassTunes;
+			packageProductDependencies = (
+			);
+			productName = GlassTunes;
+			productReference = AAD41582AF0AA8506F8F319C /* GlassTunes.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B6FA354F37864B9FEDB36405 /* GlassTunesWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 830C8A17F62F60366B803555 /* Build configuration list for PBXNativeTarget "GlassTunesWidgets" */;
+			buildPhases = (
+				4C69AEAF7B0D9B9979C80E71 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GlassTunesWidgets;
+			packageProductDependencies = (
+			);
+			productName = GlassTunesWidgets;
+			productReference = 58B431777965F9972C72598F /* GlassTunesWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		682045A4570D5FD3FB5F3850 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					70CDFDE46D9324F11ACFC010 = {
+						DevelopmentTeam = 9TW49VDW3X;
+						ProvisioningStyle = Automatic;
+					};
+					B6FA354F37864B9FEDB36405 = {
+						DevelopmentTeam = 9TW49VDW3X;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F60F7D0E60F9E693F525C208 /* Build configuration list for PBXProject "GlassTunes" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4A201123E80A14A32B9562C3;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A911E45FCE66BB3AC0C3C83F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				70CDFDE46D9324F11ACFC010 /* GlassTunes */,
+				B6FA354F37864B9FEDB36405 /* GlassTunesWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A6F0DADAAECEB8A43C246677 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1967A624169B864921037E42 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2AAD6B48448F85268AE1CD82 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A518DD1A06D13163BFA0F957 /* AppleMusicSource.swift in Sources */,
+				D3D0849092EA4C98AA807B4F /* Artwork.swift in Sources */,
+				BF760B03D7228B8CF8C490D8 /* ExpandedPlayerView.swift in Sources */,
+				EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */,
+				9E8DFE746B9D98FBCE5419B3 /* MainView.swift in Sources */,
+				457FC5F0C8F0D3D6006362F3 /* MiniPlayerView.swift in Sources */,
+				C47B7CE3F173AC7FCC91BFFD /* MusicSource.swift in Sources */,
+				F26786C8D22120029947DCDE /* PlaybackIntents.swift in Sources */,
+				508935864513D0CEACD3D4B8 /* PlayerHub.swift in Sources */,
+				E945C631F118E0561517EE4E /* SharedStore.swift in Sources */,
+				C6C060E7231E8693D52447F7 /* SonosSource.swift in Sources */,
+				D2BE0C400D3D05A5D4E30375 /* SpotifySource.swift in Sources */,
+				1D2585479EEA336DB44EC889 /* WidgetViews.swift in Sources */,
+				920190EDCB58B84837A57151 /* WindowManager.swift in Sources */,
+				141916BD05D50B87FAD209EA /* YouTubeMusicSource.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C69AEAF7B0D9B9979C80E71 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39C8BBB9FEDC4BD1E130C7CA /* GlassTunesWidgets.swift in Sources */,
+				80DAF440DDFC45D8D542576B /* PlaybackIntents.swift in Sources */,
+				F0FC6051EC7EA2219AD33AF4 /* SharedStore.swift in Sources */,
+				262DCF0F92FAC88511F4BF1E /* WidgetViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4E5367AEB2EA076B49157943 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B6FA354F37864B9FEDB36405 /* GlassTunesWidgets */;
+			targetProxy = B0916B05A360DD81DA17FB19 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0CA22A0B1553AC57B98029AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/GlassTunes.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibrahim.glasstunes;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		12EA1FCEE167140260F01061 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Widget/GlassTunesWidgets.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Widget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibrahim.glasstunes.widgets;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		2C8BF10BC7D41164A2532761 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 9TW49VDW3X;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GT_APP_GROUP = "$(DEVELOPMENT_TEAM).com.ibrahim.glasstunes";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		393A8CB91282D9FAF7B28999 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/GlassTunes.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibrahim.glasstunes;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		9AB9D951486B31FD0D4A31E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9TW49VDW3X;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GT_APP_GROUP = "$(DEVELOPMENT_TEAM).com.ibrahim.glasstunes";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		AF39F29069B1EB16CC698A90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Widget/GlassTunesWidgets.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Widget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibrahim.glasstunes.widgets;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4194384DEC71C3D8B982AB02 /* Build configuration list for PBXNativeTarget "GlassTunes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0CA22A0B1553AC57B98029AD /* Debug */,
+				393A8CB91282D9FAF7B28999 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		830C8A17F62F60366B803555 /* Build configuration list for PBXNativeTarget "GlassTunesWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF39F29069B1EB16CC698A90 /* Debug */,
+				12EA1FCEE167140260F01061 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F60F7D0E60F9E693F525C208 /* Build configuration list for PBXProject "GlassTunes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C8BF10BC7D41164A2532761 /* Debug */,
+				9AB9D951486B31FD0D4A31E0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 682045A4570D5FD3FB5F3850 /* Project object */;
+}
