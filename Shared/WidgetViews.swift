@@ -138,11 +138,52 @@ struct GlassBackdrop: View {
                 RadialGradient(colors: [snapshot.tint.opacity(0.25), .clear], center: .bottomTrailing, startRadius: 0, endRadius: 260)
                 Color.white.opacity(0.06)
             case .clear:
-                LinearGradient(colors: [.white.opacity(0.12), .white.opacity(0.02)], startPoint: .top, endPoint: .bottom)
+                ClearLiquidGlass()
             }
-            // Specular sheen across the top-left edge.
-            LinearGradient(stops: [.init(color: .white.opacity(0.24), location: 0), .init(color: .clear, location: 0.4)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            if snapshot.style != .clear {
+                // Specular sheen across the top-left edge.
+                LinearGradient(stops: [.init(color: .white.opacity(0.24), location: 0), .init(color: .clear, location: 0.4)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+            }
+        }
+    }
+}
+
+/// See-through Liquid Glass: clear glass (macOS 26+) or the thinnest system material,
+/// with the bright rim and soft top-left highlight that make glass read as glass.
+struct ClearLiquidGlass: View {
+    var body: some View {
+        ZStack {
+            glass
+            // Faint body so the shape is visible on any wallpaper.
+            Color.white.opacity(0.03)
+            // Soft specular highlight, strongest at the top-left.
+            RadialGradient(colors: [.white.opacity(0.22), .white.opacity(0)], center: .topLeading,
+                           startRadius: 0, endRadius: 220)
+            // Very light darkening at the bottom keeps white text readable.
+            LinearGradient(colors: [.clear, .black.opacity(0.12)], startPoint: .center, endPoint: .bottom)
+            // Rim light: bright on the top-left edge, fading around, catching again bottom-right.
+            ContainerRelativeShape()
+                .strokeBorder(LinearGradient(stops: [
+                    .init(color: .white.opacity(0.75), location: 0),
+                    .init(color: .white.opacity(0.18), location: 0.35),
+                    .init(color: .white.opacity(0.05), location: 0.6),
+                    .init(color: .white.opacity(0.35), location: 1),
+                ], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.2)
+            // Inner glow just inside the rim, for thickness.
+            ContainerRelativeShape()
+                .inset(by: 1.5)
+                .strokeBorder(.white.opacity(0.08), lineWidth: 3)
+                .blur(radius: 2)
+        }
+    }
+
+    @ViewBuilder
+    private var glass: some View {
+        if #available(macOS 26.0, *) {
+            Rectangle().fill(.clear).glassEffect(.clear, in: Rectangle())
+        } else {
+            Rectangle().fill(.ultraThinMaterial).opacity(0.6)
         }
     }
 }
@@ -533,11 +574,10 @@ struct LargePlayerView: View {
     }
 }
 
-/// Picks the layout for a widget size. Colored glass styles always use light-on-dark text.
+/// Picks the layout for a widget size. Text is always light-on-dark, like Apple's glass widgets.
 struct GlassTunesWidgetView: View {
     let family: WidgetFamily
     let snapshot: PlayerSnapshot
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Group {
@@ -547,6 +587,8 @@ struct GlassTunesWidgetView: View {
             default: LargePlayerView(snapshot: snapshot)
             }
         }
-        .environment(\.colorScheme, snapshot.style == .clear ? colorScheme : .dark)
+        // Light-on-dark text in every style; on clear glass a soft shadow keeps it readable on any wallpaper.
+        .environment(\.colorScheme, .dark)
+        .shadow(color: .black.opacity(snapshot.style == .clear ? 0.35 : 0), radius: 2, y: 1)
     }
 }
