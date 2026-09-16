@@ -200,30 +200,34 @@ struct SourceBadge: View {
     }
 }
 
-/// The source badge; when several players are active it becomes a button that switches between them.
+/// The source badge. When several players are active, a tiny switch button (window-button sized)
+/// sits on its corner and moves to the next player.
 struct SourceSwitcher: View {
     let snapshot: PlayerSnapshot
     var size: CGFloat = 20
 
     var body: some View {
         let count = snapshot.nowPlaying.availableSources?.count ?? 0
-        if count > 1 {
-            Button(intent: NextSourceIntent()) {
-                HStack(spacing: 3) {
-                    SourceBadge(snapshot: snapshot, size: size)
-                    Image(systemName: "arrow.left.arrow.right")
-                        .font(.system(size: size * 0.42, weight: .bold))
-                        .foregroundStyle(.secondary)
+        SourceBadge(snapshot: snapshot, size: size)
+            .overlay(alignment: .bottomTrailing) {
+                if count > 1 {
+                    Button(intent: NextSourceIntent()) {
+                        Image(systemName: "arrow.left.arrow.right")
+                            .font(.system(size: 7, weight: .heavy))
+                            .foregroundStyle(Color.black.opacity(0.8))
+                            .frame(width: 14, height: 14)
+                            .background(Circle().fill(.white))
+                            .overlay(Circle().strokeBorder(.black.opacity(0.12), lineWidth: 0.5))
+                            .shadow(color: .black.opacity(0.25), radius: 1.5, y: 0.5)
+                            .contentShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .offset(x: 5, y: 5)
+                    .widgetAccentable()
                 }
-                .padding(.leading, 2)
-                .padding(.trailing, 5)
-                .padding(.vertical, 2)
-                .liquidGlass(Capsule(), intensity: 0.6)
             }
-            .buttonStyle(.plain)
-        } else {
-            SourceBadge(snapshot: snapshot, size: size)
-        }
+            // Room for the corner button so it isn't clipped.
+            .padding([.trailing, .bottom], count > 1 ? 5 : 0)
     }
 }
 
@@ -482,9 +486,14 @@ struct LargePlayerView: View {
 
             TrackProgress(nowPlaying: np, barHeight: 7)
                 .opacity(np.isEmpty ? 0.4 : 1)
-                .overlay(alignment: .bottom) { TransitionBadge(nowPlaying: np).offset(y: 3) }
 
-            Spacer(minLength: 12)
+            // Sits on its own line under the times, clear of the scrubber.
+            if np.transition != nil {
+                TransitionBadge(nowPlaying: np)
+                    .padding(.top, 10)
+            }
+
+            Spacer(minLength: 10)
 
             TransportRow(snapshot: snapshot, size: 30)
 
