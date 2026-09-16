@@ -106,6 +106,60 @@ final class YouTubeMusicSource: MusicSource {
         }
     }
 
+    // MARK: Queue
+
+    private static let queueJS = """
+    (function(){
+      var items = document.querySelectorAll('ytmusic-player-queue-item');
+      if (!items.length) return 'empty';
+      var current = -1;
+      items.forEach(function(e, i){ if (e.hasAttribute('selected')) current = i; });
+      var out = [];
+      for (var i = current + 1; i < items.length && out.length < 30; i++) {
+        var e = items[i];
+        var t = e.querySelector('.song-title');
+        var b = e.querySelector('.byline');
+        var img = e.querySelector('img');
+        out.push({title: t ? t.textContent.trim() : '', artist: b ? b.textContent.trim() : '', artwork: img ? img.src : '', index: i});
+      }
+      return JSON.stringify(out);
+    })()
+    """
+
+    private struct QueuePayload: Decodable {
+        var title: String
+        var artist: String
+        var artwork: String
+        var index: Int
+    }
+
+    func upNext() async -> QueueResult {
+        guard let browser = activeBrowser else { return .unavailable("Open music.youtube.com in Chrome or Safari.") }
+        guard case .success(let json) = runInTab(Self.queueJS, browser: browser), json != "none" else {
+            return .unavailable("Couldn't read the YouTube Music tab.")
+        }
+        if json == "empty" { return .unavailable("Open the player page in YouTube Music to see Up Next.") }
+        guard let rows = try? JSONDecoder().decode([QueuePayload].self, from: Data(json.utf8)) else {
+            return .unavailable("Couldn't read the YouTube Music queue.")
+        }
+        return .items(rows.map {
+            QueueItem(id: "yt\($0.index)", title: $0.title, artist: $0.artist, artwork: URL(string: $0.artwork), position: $0.index)
+        })
+    }
+
+    func playQueueItem(_ item: QueueItem) async {
+        guard let browser = activeBrowser else { return }
+        let js = """
+        (function(){
+          var e = document.querySelectorAll('ytmusic-player-queue-item')[\(item.position)];
+          if (!e) return 'missing';
+          (e.querySelector('ytmusic-play-button-renderer') || e).click();
+          return 'ok';
+        })()
+        """
+        _ = runInTab(js, browser: browser)
+    }
+
     // MARK: Helpers
 
     private func parse(_ json: String, browser: Browser) -> SourceReading? {

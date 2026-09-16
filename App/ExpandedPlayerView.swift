@@ -183,6 +183,7 @@ struct ExpandedPlayerView: View {
                             isEnabled: np.repeatMode != nil) {
                     hub.perform(.cycleRepeat)
                 }
+                QueueButton()
                 Spacer()
                 SourceMenu()
             }

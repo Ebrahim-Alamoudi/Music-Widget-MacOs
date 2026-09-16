@@ -39,6 +39,9 @@ protocol MusicSource: AnyObject {
     var issue: String? { get }
     func read() async -> SourceReading?
     func perform(_ action: PlayerAction, current: NowPlaying) async
+    /// The songs after the current one, or why they can't be shown.
+    func upNext() async -> QueueResult
+    func playQueueItem(_ item: QueueItem) async
 }
 
 enum Apps {

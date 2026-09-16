@@ -80,6 +80,12 @@ final class SpotifySource: MusicSource {
         return SourceReading(nowPlaying: np, artwork: art.map { .url($0) })
     }
 
+    func upNext() async -> QueueResult {
+        .unavailable("Spotify doesn't share its queue with other apps. Open the queue in Spotify instead.")
+    }
+
+    func playQueueItem(_ item: QueueItem) async {}
+
     func perform(_ action: PlayerAction, current: NowPlaying) async {
         let command = switch action {
         case .playPause: "playpause"

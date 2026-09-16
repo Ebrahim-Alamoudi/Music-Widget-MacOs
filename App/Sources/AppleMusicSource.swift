@@ -123,6 +123,45 @@ final class AppleMusicSource: MusicSource {
         _ = Script.run("tell application id \"com.apple.Music\"\n\(command)\nend tell")
     }
 
+    private static let queueScript = """
+    tell application id "com.apple.Music"
+        try
+            set thePlaylist to current playlist
+            set currentIndex to index of current track
+            set trackCount to count of tracks of thePlaylist
+        on error
+            return {}
+        end try
+        set lastIndex to currentIndex + 30
+        if lastIndex > trackCount then set lastIndex to trackCount
+        set results to {}
+        repeat with trackNumber from (currentIndex + 1) to lastIndex
+            set aTrack to track trackNumber of thePlaylist
+            set end of results to {name of aTrack, artist of aTrack, album of aTrack, trackNumber}
+        end repeat
+        return results
+    end tell
+    """
+
+    func upNext() async -> QueueResult {
+        guard isAvailable else { return .unavailable("Music isn't open.") }
+        guard case .success(let list) = Script.run(Self.queueScript) else {
+            return .unavailable("Music didn't share its queue.")
+        }
+        guard list.numberOfItems > 0 else { return .items([]) }
+        let items: [QueueItem] = (1...list.numberOfItems).compactMap { index in
+            guard let row = list.atIndex(index), row.numberOfItems >= 4 else { return nil }
+            let position = Int(row.double(at: 4))
+            return QueueItem(id: "am\(position)", title: row.string(at: 1), artist: row.string(at: 2),
+                             artwork: nil, position: position)
+        }
+        return .items(items)
+    }
+
+    func playQueueItem(_ item: QueueItem) async {
+        _ = Script.run("tell application id \"com.apple.Music\" to play track \(item.position) of current playlist")
+    }
+
     /// Music stores its Transitions setting (Settings → Playback) in its preferences.
     /// Style 1 is AutoMix and 0 is Crossfade; Apple doesn't document these keys.
     private func transitionSetting() -> String? {

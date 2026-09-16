@@ -128,6 +128,27 @@ final class PlayerHub {
         }
     }
 
+    // MARK: Queue
+
+    func upNext() async -> QueueResult {
+        guard !nowPlaying.isEmpty, let source = source(nowPlaying.source) else {
+            return .unavailable("Nothing is playing.")
+        }
+        return await source.upNext()
+    }
+
+    func playQueueItem(_ item: QueueItem) {
+        guard let source = source(nowPlaying.source) else { return }
+        lastManualSkip = Date()
+        Task {
+            await source.playQueueItem(item)
+            for delay in [0.4, 1.5] {
+                try? await Task.sleep(for: .seconds(delay))
+                await refresh()
+            }
+        }
+    }
+
     /// Shows the next player that has something loaded (Automatic mode).
     func cycleSource() {
         let active = nowPlaying.availableSources ?? []

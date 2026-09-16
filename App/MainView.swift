@@ -143,12 +143,17 @@ private struct NowPlayingPanel: View {
                 VolumeRow(volume: volume) { hub.perform(.setVolume($0)) }
             }
 
-            if let transition = np.transition {
-                Label(hub.isMixing ? "Mixing into the next song" : "\(transition) is on",
-                      systemImage: transition == "AutoMix" ? "infinity" : "arrow.triangle.merge")
-                    .symbolEffect(.pulse, options: .repeating, isActive: hub.isMixing)
-                    .font(.caption)
-                    .foregroundStyle(hub.isMixing ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+            HStack {
+                if let transition = np.transition {
+                    Label(hub.isMixing ? "Mixing into the next song" : "\(transition) is on",
+                          systemImage: transition == "AutoMix" ? "infinity" : "arrow.triangle.merge")
+                        .symbolEffect(.pulse, options: .repeating, isActive: hub.isMixing)
+                        .font(.caption)
+                        .foregroundStyle(hub.isMixing ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+                }
+                Spacer(minLength: 0)
+                QueueButton(size: 32)
+                    .disabled(np.isEmpty)
             }
 
             Divider()
@@ -406,7 +411,6 @@ private struct GeneralSection: View {
     @AppStorage("miniPinned") private var miniPinned = true
     @AppStorage("hideDockIcon") private var hideDockIcon = false
     @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
-    @AppStorage("menuBarStyle") private var menuBarStyle: MenuBarStyle = .iconOnly
 
     var body: some View {
         Section {
@@ -416,12 +420,6 @@ private struct GeneralSection: View {
                     launchAtLogin = SMAppService.mainApp.status == .enabled
                 }
             Toggle("Keep mini player on top", isOn: $miniPinned)
-            Toggle("Show in menu bar", isOn: $showMenuBarIcon)
-            if showMenuBarIcon {
-                Picker("Menu bar shows", selection: $menuBarStyle) {
-                    ForEach(MenuBarStyle.allCases) { Text($0.title).tag($0) }
-                }
-            }
             Toggle("Hide Dock icon", isOn: $hideDockIcon)
                 .onChange(of: hideDockIcon) { _, hide in
                     NSApp.setActivationPolicy(hide ? .accessory : .regular)
@@ -437,7 +435,7 @@ private struct GeneralSection: View {
             Text("General")
         } footer: {
             if hideDockIcon && !showMenuBarIcon {
-                Text("GlassTunes is hidden from the Dock and the menu bar. Open it from Applications or Spotlight to get back here.")
+                Text("GlassTunes is hidden from the Dock and the menu bar (toolbar › Menu Bar). Open it from Applications or Spotlight to get back here.")
             }
         }
     }

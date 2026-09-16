@@ -12,8 +12,10 @@ One window with native macOS controls, the system font and your accent color:
 
 - **Now Playing (left):** animated artwork, a seek bar, controls, shuffle/repeat, volume, the AutoMix status, and your recent songs.
 - **Settings (right):** where music comes from, the Sonos room, a widget preview for each glass style and size, and General options.
-- **Mini player:** a floating 340×156 panel on real Liquid Glass (`NSGlassEffectView`). Hover it to pin, expand or close it.
-- **Full player:** a resizable window in the style of Apple Music's full-screen player.
+- **Up Next:** the list button shows the queue. That's the current album or playlist in Apple Music, the Sonos queue, or YouTube Music's Up Next. Click a song to play it. Spotify doesn't share its queue.
+- **Menu Bar button (toolbar):** show the icon, the song title, or both, or remove GlassTunes from the menu bar.
+- **Mini player:** a floating 340×156 panel on real Liquid Glass (`NSGlassEffectView`). Hover it to show the real window buttons (the green one opens the full player), the queue and the pin.
+- **Full player:** a 380×700 glass panel in the style of Apple Music's full-screen player, with the same hover window buttons (green switches back to the mini player).
 - **Playback menu:** ⌥Space play/pause, ⌘→ / ⌘← to skip, ⇧⌘S shuffle, ⇧⌘R repeat, ⇧⌘P mini player, ⇧⌘F full player.
 
 It uses about 1% CPU and about 110 MB of memory when idle. Only the browser and Sonos sources are checked every 3 seconds; Music and Spotify announce their own changes. Closed player windows free their video and views.

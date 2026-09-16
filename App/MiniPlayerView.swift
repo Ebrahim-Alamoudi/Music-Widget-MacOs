@@ -104,7 +104,8 @@ struct MiniPlayerView: View {
             }
             Spacer(minLength: 4)
             if hovering {
-                HStack(spacing: 2) {
+                HStack(spacing: 4) {
+                    QueueButton(size: 18)
                     HeaderButton(symbol: pinned ? "pin.fill" : "pin", help: pinned ? "Stop keeping on top" : "Keep on top") {
                         pinned.toggle()
                     }

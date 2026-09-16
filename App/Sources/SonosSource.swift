@@ -125,6 +125,49 @@ final class SonosSource: MusicSource {
         }
     }
 
+    // MARK: Queue
+
+    func upNext() async -> QueueResult {
+        guard let host = selectedRoom?.host else { return .unavailable("Choose a Sonos room first.") }
+        let instance = "<InstanceID>0</InstanceID>"
+        guard let media = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport",
+                                               action: "GetMediaInfo", arguments: instance),
+              let position = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport",
+                                                  action: "GetPositionInfo", arguments: instance) else {
+            return .unavailable("Can't reach the speaker.")
+        }
+        guard (SOAP.value("CurrentURI", in: media) ?? "").hasPrefix("x-rincon-queue:") else {
+            return .unavailable("This music isn't playing from the Sonos queue (for example Spotify Connect, AirPlay or radio), so the speaker can't list what's next.")
+        }
+        let current = Int(SOAP.value("Track", in: position) ?? "") ?? 0
+        let arguments = "<ObjectID>Q:0</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag>"
+            + "<Filter>dc:title,dc:creator,upnp:albumArtURI</Filter>"
+            + "<StartingIndex>\(current)</StartingIndex><RequestedCount>30</RequestedCount><SortCriteria></SortCriteria>"
+        guard let response = try? await SOAP.call(host: host, path: "/MediaServer/ContentDirectory/Control",
+                                                  service: "ContentDirectory", action: "Browse", arguments: arguments),
+              let didl = SOAP.value("Result", in: response) else {
+            return .unavailable("The speaker didn't return its queue.")
+        }
+        var items: [QueueItem] = []
+        for (offset, entry) in SOAP.elements("item", in: didl).enumerated() {
+            var art = SOAP.value("albumArtURI", in: entry) ?? ""
+            if art.hasPrefix("/") { art = "http://\(host):1400\(art)" }
+            let number = current + offset + 1 // 1-based track number in the queue
+            items.append(QueueItem(id: "sonos\(number)", title: SOAP.value("title", in: entry) ?? "Unknown",
+                                   artist: SOAP.value("creator", in: entry) ?? "",
+                                   artwork: URL(string: art), position: number))
+        }
+        return .items(items)
+    }
+
+    func playQueueItem(_ item: QueueItem) async {
+        guard let host = selectedRoom?.host else { return }
+        _ = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "Seek",
+                                 arguments: "<InstanceID>0</InstanceID><Unit>TRACK_NR</Unit><Target>\(item.position)</Target>")
+        _ = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "Play",
+                                 arguments: "<InstanceID>0</InstanceID><Speed>1</Speed>")
+    }
+
     // MARK: Control
 
     func perform(_ action: PlayerAction, current: NowPlaying) async {
@@ -205,6 +248,15 @@ enum SOAP {
               let match = regex.firstMatch(in: xml, range: NSRange(xml.startIndex..., in: xml)),
               let range = Range(match.range(at: 1), in: xml) else { return nil }
         return unescape(String(xml[range]))
+    }
+
+    /// Every `<tag ...>...</tag>` element in the document, as raw XML.
+    static func elements(_ tag: String, in xml: String) -> [String] {
+        let pattern = "<\(tag)[\\s>].*?</\(tag)>"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else { return [] }
+        return regex.matches(in: xml, range: NSRange(xml.startIndex..., in: xml)).compactMap {
+            Range($0.range, in: xml).map { String(xml[$0]) }
+        }
     }
 
     static func unescape(_ text: String) -> String {
