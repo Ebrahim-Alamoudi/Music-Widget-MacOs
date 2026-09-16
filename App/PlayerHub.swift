@@ -457,7 +457,9 @@ final class PlayerHub {
             }
             adopt(image, id: id)
             SharedStore.nowPlaying = nowPlaying
-            finishArtworkWait(for: id)
+            // Redraw with the cover whether or not the 4-second wait already ran out.
+            artworkWaitID = nil
+            reloadWidgets()
         }
     }
 
