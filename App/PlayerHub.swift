@@ -25,6 +25,10 @@ final class PlayerHub {
     private(set) var motion: MotionURLs?
     /// True for a few seconds after an AutoMix/crossfade transition is detected.
     private(set) var isMixing = false
+    /// Up Next for the current song, fetched ahead of time so the queue opens instantly.
+    private(set) var queue: QueueResult?
+    @ObservationIgnored private var queueTrackID = ""
+    @ObservationIgnored private var queueTask: Task<Void, Never>?
 
     let sonos = SonosSource()
     @ObservationIgnored private let appleMusic = AppleMusicSource()
@@ -178,11 +182,30 @@ final class PlayerHub {
 
     // MARK: Queue
 
-    func upNext() async -> QueueResult {
+    /// Loads Up Next for the current song. Concurrent calls share one request.
+    func refreshQueue() async {
         guard !nowPlaying.isEmpty, let source = source(nowPlaying.source) else {
-            return .unavailable("Nothing is playing.")
+            queue = .unavailable("Nothing is playing.")
+            queueTrackID = nowPlaying.trackID
+            return
         }
-        return await source.upNext()
+        if let queueTask { return await queueTask.value }
+        let trackID = nowPlaying.trackID
+        let task = Task {
+            let result = await source.upNext()
+            if nowPlaying.trackID == trackID {
+                queue = result
+                queueTrackID = trackID
+            }
+        }
+        queueTask = task
+        await task.value
+        queueTask = nil
+    }
+
+    /// The cached queue, if it belongs to the song that's playing now.
+    var currentQueue: QueueResult? {
+        queueTrackID == nowPlaying.trackID ? queue : nil
     }
 
     func playQueueItem(_ item: QueueItem) {
@@ -274,6 +297,7 @@ final class PlayerHub {
                 if artwork == nil { loadArtwork(reading?.artwork, for: np) }
                 lookUpMotion(for: np)
             }
+            queue = nil
         } else {
             np.tint = old.tint
             if let pending = pendingVolume {
@@ -303,6 +327,10 @@ final class PlayerHub {
         nowPlaying = np
         SharedStore.nowPlaying = np
         if widgetsNeedReload { WidgetCenter.shared.reloadAllTimelines() }
+        // Warm the queue in the background so opening it is instant (Spotify has none to fetch).
+        if trackChanged, !np.isEmpty, np.source != .spotify {
+            Task { await refreshQueue() }
+        }
     }
 
     /// Music apps don't report AutoMix/crossfade, so infer it: a song that changed on its own

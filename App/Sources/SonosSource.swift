@@ -136,10 +136,11 @@ final class SonosSource: MusicSource {
     func upNext() async -> QueueResult {
         guard let host = selectedRoom?.host else { return .unavailable("Choose a Sonos room first.") }
         let instance = "<InstanceID>0</InstanceID>"
-        guard let media = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport",
-                                               action: "GetMediaInfo", arguments: instance),
-              let position = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport",
-                                                  action: "GetPositionInfo", arguments: instance) else {
+        async let mediaCall = SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport",
+                                        action: "GetMediaInfo", arguments: instance)
+        async let positionCall = SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport",
+                                           action: "GetPositionInfo", arguments: instance)
+        guard let media = try? await mediaCall, let position = try? await positionCall else {
             return .unavailable("Can't reach the speaker.")
         }
         guard (SOAP.value("CurrentURI", in: media) ?? "").hasPrefix("x-rincon-queue:") else {

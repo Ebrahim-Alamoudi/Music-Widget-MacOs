@@ -46,7 +46,6 @@ struct QueueButton: View {
 
 struct QueueView: View {
     @Environment(PlayerHub.self) private var hub
-    @State private var result: QueueResult?
 
     var body: some View {
         let np = hub.nowPlaying
@@ -71,7 +70,7 @@ struct QueueView: View {
 
             Divider()
 
-            switch result {
+            switch hub.currentQueue {
             case nil:
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -97,7 +96,7 @@ struct QueueView: View {
         }
         .frame(width: 300, height: 400)
         .task(id: np.trackID) {
-            result = await hub.upNext()
+            await hub.refreshQueue()
         }
     }
 }
