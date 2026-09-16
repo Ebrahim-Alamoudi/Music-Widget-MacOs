@@ -275,11 +275,14 @@ private struct SourceRow: View {
                     Image(systemName: "checkmark")
                         .fontWeight(.semibold)
                         .foregroundStyle(.tint)
+                        .transition(.scale(scale: 0.3).combined(with: .opacity))
                 }
             }
             .contentShape(Rectangle())
+            .animation(.spring(duration: 0.35, bounce: 0.5), value: selected)
         }
         .buttonStyle(.plain)
+        .sensoryFeedback(.alignment, trigger: selected)
         .help(issue ?? "")
     }
 

@@ -143,15 +143,20 @@ private struct HeaderButton: View {
     let symbol: String
     let help: String
     let action: () -> Void
+    @State private var taps = 0
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            taps += 1
+            action()
+        } label: {
             Image(systemName: symbol)
                 .font(.system(size: 9, weight: .bold))
                 .frame(width: 18, height: 18)
                 .contentShape(Circle())
+                .pressEffect(taps)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressScale())
         .glass(interactive: true, in: Circle())
         .help(help)
     }
@@ -162,9 +167,13 @@ private struct MiniToggle: View {
     let isOn: Bool
     let isEnabled: Bool
     let action: () -> Void
+    @State private var taps = 0
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            taps += 1
+            action()
+        } label: {
             Image(systemName: symbol)
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(isOn ? AnyShapeStyle(Color.black.opacity(0.85)) : AnyShapeStyle(.secondary))
@@ -177,8 +186,9 @@ private struct MiniToggle: View {
                         .scaleEffect(isOn ? 1 : 0.6)
                 }
                 .contentShape(Circle())
+                .pressEffect(taps)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressScale())
         .animation(.spring(duration: 0.3), value: isOn)
         .accessibilityValue(isOn ? "On" : "Off")
         .disabled(!isEnabled)

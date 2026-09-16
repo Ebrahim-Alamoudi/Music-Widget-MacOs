@@ -99,3 +99,49 @@ enum GlassBackdropView {
         }
     }
 }
+
+// MARK: - Press effect
+
+private struct BurstValues {
+    var scale = 1.0
+    var opacity = 0.0
+}
+
+/// A soft ripple that blooms out of a button and fades, plus a light trackpad tap.
+private struct TapBurst: ViewModifier {
+    let trigger: Int
+    var color: Color
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                Circle()
+                    .fill(color.opacity(0.28))
+                    .keyframeAnimator(initialValue: BurstValues(), trigger: trigger) { circle, value in
+                        circle
+                            .scaleEffect(value.scale)
+                            .opacity(value.opacity)
+                    } keyframes: { _ in
+                        KeyframeTrack(\.scale) {
+                            CubicKeyframe(0.55, duration: 0.01)
+                            SpringKeyframe(1.45, duration: 0.5, spring: .snappy)
+                        }
+                        KeyframeTrack(\.opacity) {
+                            LinearKeyframe(1, duration: 0.04)
+                            CubicKeyframe(0, duration: 0.46)
+                        }
+                    }
+                    .allowsHitTesting(false)
+            }
+            .sensoryFeedback(.alignment, trigger: trigger)
+    }
+}
+
+extension View {
+    /// Bouncing symbol + ripple + haptic whenever `trigger` changes.
+    func pressEffect(_ trigger: Int, color: Color = .primary) -> some View {
+        self
+            .symbolEffect(.bounce, value: trigger)
+            .modifier(TapBurst(trigger: trigger, color: color))
+    }
+}

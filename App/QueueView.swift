@@ -18,9 +18,11 @@ enum QueueResult {
 struct QueueButton: View {
     var size: CGFloat = 38
     @State private var isShowing = false
+    @State private var taps = 0
 
     var body: some View {
         Button {
+            taps += 1
             isShowing.toggle()
         } label: {
             Image(systemName: "list.bullet")
@@ -31,8 +33,9 @@ struct QueueButton: View {
                     Circle().fill(.white).opacity(isShowing ? 1 : 0)
                 }
                 .contentShape(Circle())
+                .pressEffect(taps)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressScale())
         .glass(interactive: true, in: Circle())
         .help("Up Next")
         .popover(isPresented: $isShowing, arrowEdge: .bottom) {
