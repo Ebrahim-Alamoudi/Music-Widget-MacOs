@@ -15,6 +15,7 @@
 		3F77C91A022C16DC15E9C442 /* GlassTunesWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 58B431777965F9972C72598F /* GlassTunesWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		457FC5F0C8F0D3D6006362F3 /* MiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F544C4A14F6C6FD9C674F92 /* MiniPlayerView.swift */; };
 		508935864513D0CEACD3D4B8 /* PlayerHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */; };
+		597387C91FBED3DB60FCA53F /* FlipClockWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EE2333968C95CBC40479 /* FlipClockWidget.swift */; };
 		67968A579E20FE48425DD7D5 /* ControlHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CF7108507DF84C286C2B33A /* ControlHUD.swift */; };
 		80DAF440DDFC45D8D542576B /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
 		920190EDCB58B84837A57151 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6317B59DFBB510104BC500B /* WindowManager.swift */; };
@@ -66,6 +67,7 @@
 		0A69D5F85C5569B732C6023A /* MusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicSource.swift; sourceTree = "<group>"; };
 		1114AFB3004CEA0BD7660D76 /* AppleMusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicSource.swift; sourceTree = "<group>"; };
 		1F544C4A14F6C6FD9C674F92 /* MiniPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniPlayerView.swift; sourceTree = "<group>"; };
+		21E8EE2333968C95CBC40479 /* FlipClockWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipClockWidget.swift; sourceTree = "<group>"; };
 		2A231D10C80BA05B629FE581 /* SpotifySource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifySource.swift; sourceTree = "<group>"; };
 		2EAB69AC413C6610B482FC13 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
 		33037F37C3706EF3ACB6E27E /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 		3D896F8A4BBB61B82B072D59 /* Widget */ = {
 			isa = PBXGroup;
 			children = (
+				21E8EE2333968C95CBC40479 /* FlipClockWidget.swift */,
 				C3FF2941859A768E066577AE /* GlassTunesWidgets.entitlements */,
 				76BE9B6A30D43671C41A2C2E /* GlassTunesWidgets.swift */,
 				B9E467DF6BF975538BBE30C0 /* Info.plist */,
@@ -301,6 +304,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				597387C91FBED3DB60FCA53F /* FlipClockWidget.swift in Sources */,
 				39C8BBB9FEDC4BD1E130C7CA /* GlassTunesWidgets.swift in Sources */,
 				80DAF440DDFC45D8D542576B /* PlaybackIntents.swift in Sources */,
 				F0FC6051EC7EA2219AD33AF4 /* SharedStore.swift in Sources */,

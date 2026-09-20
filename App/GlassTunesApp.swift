@@ -98,8 +98,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Clicking a widget opens `glasstunes://player`.
     func application(_ application: NSApplication, open urls: [URL]) {
-        if urls.contains(where: { $0.scheme == "glasstunes" }) {
-            WindowManager.showMiniPlayer()
+        for url in urls where url.scheme == "glasstunes" {
+            if url.host == "clock" {
+                // The flip clock widget opens macOS's Clock app.
+                NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: "/System/Applications/Clock.app"),
+                                                   configuration: .init())
+            } else {
+                WindowManager.showMiniPlayer()
+            }
         }
     }
 }

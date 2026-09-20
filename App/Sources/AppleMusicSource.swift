@@ -169,6 +169,29 @@ final class AppleMusicSource: MusicSource {
         return .items(items)
     }
 
+    func canPlayAgain(_ track: RecentTrack) -> Bool { isAvailable }
+
+    /// Plays it again from the library: by its ID, or by name and artist.
+    func playAgain(_ track: RecentTrack) async {
+        guard isAvailable else { return }
+        let id = Script.quoted(track.sourceTrackID ?? "")
+        let name = Script.quoted(track.title)
+        let artist = Script.quoted(track.artist)
+        _ = Script.run("""
+        tell application id "com.apple.Music"
+            try
+                play (first track of library playlist 1 whose persistent ID is "\(id)")
+                return "ok"
+            end try
+            try
+                play (first track of library playlist 1 whose name is "\(name)" and artist is "\(artist)")
+                return "ok"
+            end try
+            return "no"
+        end tell
+        """)
+    }
+
     func playQueueItem(_ item: QueueItem) async {
         _ = Script.run("tell application id \"com.apple.Music\" to play track \(item.position) of current playlist")
     }

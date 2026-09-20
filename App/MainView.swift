@@ -209,31 +209,75 @@ private struct RecentStripView: View {
             // Equal squares that always fill the panel width; empty slots keep the row balanced.
             HStack(spacing: 8) {
                 ForEach(0..<slots, id: \.self) { index in
-                    let item = index < items.count ? items[index] : nil
-                    Color.clear
-                        .aspectRatio(1, contentMode: .fit)
-                        .overlay {
-                            if let image = item?.image {
-                                Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
-                            } else {
-                                Rectangle().fill(.quaternary.opacity(item == nil ? 0.5 : 1))
-                                    .overlay {
-                                        if item != nil {
-                                            Image(systemName: "music.note").foregroundStyle(.tertiary)
-                                        }
-                                    }
-                            }
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .strokeBorder(.separator.opacity(0.6), lineWidth: 0.5)
-                        }
-                        .help(item.map { "\($0.track.title) — \($0.track.artist)" } ?? "")
+                    RecentCover(item: index < items.count ? items[index] : nil)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// One Recently Played cover. Click to play it again where the player allows it.
+private struct RecentCover: View {
+    @Environment(PlayerHub.self) private var hub
+    let item: RecentItem?
+    @State private var hovering = false
+
+    var body: some View {
+        let canPlay = item.map { hub.canPlayAgain($0.track) } ?? false
+        Button {
+            if let item { hub.playAgain(item.track) }
+        } label: {
+            Color.clear
+                .aspectRatio(1, contentMode: .fit)
+                .overlay {
+                    if let image = item?.image {
+                        Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
+                    } else {
+                        Rectangle().fill(.quaternary.opacity(item == nil ? 0.5 : 1))
+                            .overlay {
+                                if item != nil {
+                                    Image(systemName: "music.note").foregroundStyle(.tertiary)
+                                }
+                            }
+                    }
+                }
+                .overlay {
+                    if canPlay, hovering {
+                        ZStack {
+                            Color.black.opacity(0.45)
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                        .transition(.opacity)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(.separator.opacity(0.6), lineWidth: 0.5)
+                }
+                .scaleEffect(hovering && canPlay ? 1.05 : 1)
+                .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(!canPlay)
+        .onHover { hovering = $0 }
+        .animation(.spring(duration: 0.25), value: hovering)
+        .help(helpText(canPlay: canPlay))
+    }
+
+    private func helpText(canPlay: Bool) -> String {
+        guard let item else { return "" }
+        let song = "\(item.track.title) — \(item.track.artist)"
+        if canPlay { return "Play \(song)" }
+        guard let kind = item.track.source else { return song }
+        return switch kind {
+        case .appleMusic, .spotify: "\(song) · open \(kind.title) to play it again"
+        case .sonos: "\(song) · Sonos can only replay songs from its own queue"
+        default: "\(song) · \(kind.title) can't replay past songs"
+        }
     }
 }
 

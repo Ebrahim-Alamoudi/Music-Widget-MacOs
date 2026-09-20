@@ -68,6 +68,8 @@ struct NowPlaying: Codable, Equatable {
     var sourceName = ""
     /// Bundle ID of the app whose icon represents the source.
     var sourceAppID: String?
+    /// The player's own ID for this song (Music persistent ID, Spotify URI, …), before GlassTunes hashes it.
+    var sourceTrackID = ""
     var shuffle: Bool?
     var repeatMode: RepeatMode?
     /// "AutoMix" / "Crossfade" when the player has song transitions turned on.
@@ -92,6 +94,9 @@ struct RecentTrack: Codable, Identifiable, Equatable {
     var id: String
     var title: String
     var artist: String
+    /// Where it played, and that player's own ID, so it can be played again.
+    var source: SourceKind?
+    var sourceTrackID: String?
 }
 
 // MARK: - Commands (widget → app)

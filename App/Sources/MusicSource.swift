@@ -42,6 +42,14 @@ protocol MusicSource: AnyObject {
     /// The songs after the current one, or why they can't be shown.
     func upNext() async -> QueueResult
     func playQueueItem(_ item: QueueItem) async
+    /// Can this song from Recently Played be started again?
+    func canPlayAgain(_ track: RecentTrack) -> Bool
+    func playAgain(_ track: RecentTrack) async
+}
+
+extension MusicSource {
+    func canPlayAgain(_ track: RecentTrack) -> Bool { false }
+    func playAgain(_ track: RecentTrack) async {}
 }
 
 enum Apps {

@@ -8,6 +8,7 @@ struct GlassTunesWidgetBundle: WidgetBundle {
         NowPlayingWidget()
         PlayerWidget()
         DeckWidget()
+        FlipClockWidget()
     }
 }
 

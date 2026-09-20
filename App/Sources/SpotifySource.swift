@@ -80,6 +80,15 @@ final class SpotifySource: MusicSource {
         return SourceReading(nowPlaying: np, artwork: art.map { .url($0) })
     }
 
+    func canPlayAgain(_ track: RecentTrack) -> Bool {
+        isAvailable && track.sourceTrackID?.hasPrefix("spotify:") == true
+    }
+
+    func playAgain(_ track: RecentTrack) async {
+        guard isAvailable, let uri = track.sourceTrackID, uri.hasPrefix("spotify:") else { return }
+        _ = Script.run("tell application id \"com.spotify.client\" to play track \"\(Script.quoted(uri))\"")
+    }
+
     func upNext() async -> QueueResult {
         .unavailable("Spotify doesn't share its queue with other apps. Open the queue in Spotify instead.")
     }

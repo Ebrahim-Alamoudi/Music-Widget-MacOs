@@ -194,6 +194,26 @@ final class PlayerHub {
         }
     }
 
+    // MARK: Play again
+
+    /// Whether this past song can be started again (Apple Music and Spotify can; others can't).
+    func canPlayAgain(_ track: RecentTrack) -> Bool {
+        guard let kind = track.source, let source = source(kind), source.isAvailable else { return false }
+        return source.canPlayAgain(track)
+    }
+
+    func playAgain(_ track: RecentTrack) {
+        guard let kind = track.source, let source = source(kind), source.canPlayAgain(track) else { return }
+        lastManualSkip = Date()
+        Task {
+            await source.playAgain(track)
+            for delay in [0.4, 1.2] {
+                try? await Task.sleep(for: .seconds(delay))
+                await refresh()
+            }
+        }
+    }
+
     // MARK: Queue
 
     /// Loads Up Next for the current song. Concurrent calls share one request.
@@ -305,6 +325,7 @@ final class PlayerHub {
         let old = nowPlaying
         var np = reading?.nowPlaying ?? .stopped
         if !np.isEmpty {
+            np.sourceTrackID = np.trackID
             np.trackID = Self.stableID("\(np.source.rawValue)|\(np.trackID)")
             np.capturedAt = Date()
             np.availableSources = available
@@ -381,7 +402,8 @@ final class PlayerHub {
 
     private func pushRecent(_ np: NowPlaying) {
         var list = recent.filter { $0.id != np.trackID }
-        list.insert(RecentTrack(id: np.trackID, title: np.title, artist: np.artist), at: 0)
+        list.insert(RecentTrack(id: np.trackID, title: np.title, artist: np.artist,
+                                source: np.source, sourceTrackID: np.sourceTrackID), at: 0)
         recent = Array(list.prefix(8))
         SharedStore.recent = recent
         rebuildRecentItems()

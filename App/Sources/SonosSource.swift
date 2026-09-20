@@ -176,6 +176,41 @@ final class SonosSource: MusicSource {
                                  arguments: "<InstanceID>0</InstanceID><Speed>1</Speed>")
     }
 
+    // MARK: Play again
+
+    /// Only songs from a queueable service can be re-queued; Connect, AirPlay, radio and TV can't.
+    func canPlayAgain(_ track: RecentTrack) -> Bool {
+        guard isAvailable, let uri = Self.trackURI(track) else { return false }
+        return !["x-sonos-vli:", "x-rincon-stream:", "x-sonosapi-stream:", "x-sonosapi-radio:", "x-rincon-mp3radio:"]
+            .contains { uri.hasPrefix($0) } && !uri.contains("htastream")
+    }
+
+    /// Adds the song back to the speaker's queue as the next track, then jumps to it.
+    func playAgain(_ track: RecentTrack) async {
+        guard let room = selectedRoom, let uri = Self.trackURI(track) else { return }
+        let host = room.host
+        let instance = "<InstanceID>0</InstanceID>"
+        guard let added = try? await SOAP.call(
+            host: host, path: SOAP.avTransport, service: "AVTransport", action: "AddURIToQueue",
+            arguments: instance + "<EnqueuedURI>\(SOAP.escape(uri))</EnqueuedURI><EnqueuedURIMetaData></EnqueuedURIMetaData>"
+                + "<DesiredFirstTrackNumberEnqueued>0</DesiredFirstTrackNumberEnqueued><EnqueueAsNext>1</EnqueueAsNext>"),
+              let number = SOAP.value("FirstTrackNumberEnqueued", in: added), Int(number) != nil else { return }
+
+        // Make sure the speaker is playing its own queue before jumping to the track.
+        _ = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "SetAVTransportURI",
+                                 arguments: instance + "<CurrentURI>x-rincon-queue:\(room.id)#0</CurrentURI><CurrentURIMetaData></CurrentURIMetaData>")
+        _ = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "Seek",
+                                 arguments: instance + "<Unit>TRACK_NR</Unit><Target>\(number)</Target>")
+        _ = try? await SOAP.call(host: host, path: SOAP.avTransport, service: "AVTransport", action: "Play",
+                                 arguments: instance + "<Speed>1</Speed>")
+    }
+
+    /// Recent IDs are stored as "<track URI>|<title>".
+    private static func trackURI(_ track: RecentTrack) -> String? {
+        guard let stored = track.sourceTrackID, let uri = stored.split(separator: "|").first, !uri.isEmpty else { return nil }
+        return String(uri)
+    }
+
     // MARK: Control
 
     func perform(_ action: PlayerAction, current: NowPlaying) async {
@@ -265,6 +300,14 @@ enum SOAP {
         return regex.matches(in: xml, range: NSRange(xml.startIndex..., in: xml)).compactMap {
             Range($0.range, in: xml).map { String(xml[$0]) }
         }
+    }
+
+    /// XML-escapes a value going into a SOAP request.
+    static func escape(_ text: String) -> String {
+        text.replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
     }
 
     static func unescape(_ text: String) -> String {
