@@ -378,15 +378,14 @@ struct FlipClockView: View {
         VStack(spacing: 10) {
             headerLine(face.header, size: 15)
             GeometryReader { geo in
-                let pairs: CGFloat = c.showSeconds ? 3 : 2
-                let inner: CGFloat = 5, outer: CGFloat = c.showSeconds ? 20 : 26
-                let tileWidth = (geo.size.width - pairs * inner - (pairs - 1) * outer) / (pairs * 2)
+                let inner: CGFloat = 5, outer: CGFloat = 18
                 let height = geo.size.height
+                let layout = rowLayout(width: geo.size.width, height: height, inner: inner, outer: outer)
                 HStack(spacing: outer) {
-                    pair(face.hourDigits, slot: "h", width: tileWidth, height: height, gap: inner)
-                    pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: inner)
+                    pair(face.hourDigits, slot: "h", width: layout.tile, height: height, gap: inner)
+                    pair(face.minuteDigits, slot: "m", width: layout.tile, height: height, gap: inner)
                     if c.showSeconds {
-                        seconds(face, width: tileWidth, height: height, gap: inner)
+                        secondsPair(face, font: layout.font, width: layout.tile, height: height, gap: inner)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -394,20 +393,31 @@ struct FlipClockView: View {
         }
     }
 
-    // Small: date line, HH over MM; seconds live under them if enabled.
+    /// Card width and matching font for a row of hours, minutes and (optionally) seconds.
+    private func rowLayout(width: CGFloat, height: CGFloat, inner: CGFloat, outer: CGFloat) -> (tile: CGFloat, font: DigitFont) {
+        let groups: CGFloat = c.showSeconds ? 3 : 2
+        let tile = max(10, (width - groups * inner - (groups - 1) * outer) / (groups * 2))
+        return (tile, DigitFont(c.font, weight: c.weight, fitting: CGSize(width: tile, height: height)))
+    }
+
+    // Small: date line, HH over MM, seconds underneath.
     private func small(_ face: ClockFace) -> some View {
         VStack(spacing: 6) {
             headerLine(face.header, size: 11)
             GeometryReader { geo in
                 let gap: CGFloat = 5
-                let rows: CGFloat = c.showSeconds ? 2.45 : 2
-                let height = (geo.size.height - gap * (rows > 2 ? 2 : 1)) / rows
+                let rows: CGFloat = c.showSeconds ? 2.5 : 2
+                let height = (geo.size.height - gap * (c.showSeconds ? 2 : 1)) / rows
                 let tileWidth = min((geo.size.width - gap) / 2, height * 0.9)
+                let secondsHeight = height * 0.5
+                let secondsFont = DigitFont(c.font, weight: c.weight,
+                                            fitting: CGSize(width: tileWidth * 0.5, height: secondsHeight))
                 VStack(spacing: gap) {
                     pair(face.hourDigits, slot: "h", width: tileWidth, height: height, gap: gap)
                     pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: gap)
                     if c.showSeconds {
-                        seconds(face, width: tileWidth * 0.475, height: height * 0.45, gap: gap * 0.6)
+                        secondsPair(face, font: secondsFont, width: tileWidth * 0.62,
+                                    height: secondsHeight, gap: gap)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -434,19 +444,32 @@ struct FlipClockView: View {
             .frame(maxWidth: .infinity)
             GeometryReader { geo in
                 let inner: CGFloat = 7, outer: CGFloat = 16
-                let tileWidth = (geo.size.width - inner * 2 - outer) / 4
-                let secondsHeight = c.showSeconds ? geo.size.height * 0.36 : 0
+                let secondsHeight = c.showSeconds ? geo.size.height * 0.34 : 0
                 let height = geo.size.height - secondsHeight - (c.showSeconds ? 10 : 0)
+                let tileWidth = (geo.size.width - inner * 2 - outer) / 4
+                let secondsFont = DigitFont(c.font, weight: c.weight,
+                                            fitting: CGSize(width: tileWidth * 0.62, height: secondsHeight))
                 VStack(spacing: 10) {
                     HStack(spacing: outer) {
                         pair(face.hourDigits, slot: "h", width: tileWidth, height: height, gap: inner)
                         pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: inner)
                     }
                     if c.showSeconds {
-                        seconds(face, width: secondsHeight * 0.75, height: secondsHeight, gap: inner)
+                        secondsPair(face, font: secondsFont, width: tileWidth * 0.62,
+                                    height: secondsHeight, gap: inner)
                     }
                 }
                 .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    /// The seconds as two cards, laid out exactly like an hours or minutes pair.
+    private func secondsPair(_ face: ClockFace, font: DigitFont, width: CGFloat, height: CGFloat, gap: CGFloat) -> some View {
+        HStack(spacing: gap) {
+            ForEach(0..<2, id: \.self) { index in
+                SecondsCard(minuteStart: face.minuteStart, font: font, index: index, style: tileStyle)
+                    .frame(width: max(0, width), height: max(0, height))
             }
         }
     }
@@ -460,12 +483,6 @@ struct FlipClockView: View {
                     .frame(width: max(0, width), height: max(0, height))
             }
         }
-    }
-
-    /// Seconds: a live countdown clipped to two digits, the only text macOS updates inside a widget.
-    private func seconds(_ face: ClockFace, width: CGFloat, height: CGFloat, gap: CGFloat) -> some View {
-        SecondsTile(minuteStart: face.minuteStart, width: width * 2 + gap, height: height,
-                    font: c.font, weight: c.weight, style: tileStyle)
     }
 
     @ViewBuilder
@@ -594,37 +611,45 @@ struct FlipTile: View {
     }
 }
 
-/// Seconds without redrawing the widget: macOS's live countdown reads "0:SS". The text is pinned
-/// by its right edge — which only depends on the last digit — and shifted so the two seconds digits
-/// sit centered in the card; everything to their left is clipped away.
-struct SecondsTile: View {
+/// One seconds card, built to look exactly like an hour or minute card.
+///
+/// macOS only updates its own countdown text inside a widget, and that text reads "0:SS".
+/// Clipping or resizing it makes WidgetKit drop it, so the whole text is drawn at its natural
+/// width and everything except this card's digit is painted transparent with a gradient.
+struct SecondsCard: View {
     let minuteStart: Date
-    let width: CGFloat
-    let height: CGFloat
-    let font: ClockFont
-    let weight: ClockWeight
+    let font: DigitFont
+    /// 0 for the tens digit, 1 for the units digit.
+    let index: Int
     let style: TileStyle
 
     var body: some View {
-        let digitFont = DigitFont(font, weight: weight, fitting: CGSize(width: width / 2, height: height))
+        let textWidth = font.prefixWidth + font.advance * 2
+        let digitStart = (font.prefixWidth + CGFloat(index) * font.advance) / textWidth
+        let digitEnd = (font.prefixWidth + CGFloat(index + 1) * font.advance) / textWidth
+        // Slide the text so this card's digit lands in the middle of the card.
+        let shift = textWidth / 2 - font.prefixWidth - (CGFloat(index) + 0.5) * font.advance
+        let edge = 0.004
+
         ZStack {
             TileFace(style: style)
             Seam(style: style)
         }
-        .frame(width: width, height: height)
         .overlay {
-            // A window exactly two digits wide: the text overflows it to the left and is clipped,
-            // so only the seconds show, centered in the card.
             Text(timerInterval: minuteStart...minuteStart.addingTimeInterval(60), countsDown: false)
-                .font(digitFont.font)
-                .foregroundStyle(style.digit)
-                .lineLimit(1)
-                .fixedSize()
-                .frame(width: digitFont.advance * 2, height: height, alignment: .trailing)
-                .clipped()
+                .font(font.font)
+                .foregroundStyle(LinearGradient(stops: [
+                    .init(color: .clear, location: 0),
+                    .init(color: .clear, location: max(0, digitStart - edge)),
+                    .init(color: style.digit, location: min(1, digitStart + edge)),
+                    .init(color: style.digit, location: max(0, digitEnd - edge)),
+                    .init(color: .clear, location: min(1, digitEnd + edge)),
+                    .init(color: .clear, location: 1),
+                ], startPoint: .leading, endPoint: .trailing))
+                .frame(width: textWidth)
+                .offset(x: shift)
                 .widgetAccentable()
         }
-        .clipShape(RoundedRectangle(cornerRadius: min(width, height) * 0.1, style: .continuous))
     }
 }
 
