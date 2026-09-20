@@ -17,10 +17,12 @@
 		508935864513D0CEACD3D4B8 /* PlayerHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 561D1C5B584D30AAB5BEA127 /* PlayerHub.swift */; };
 		597387C91FBED3DB60FCA53F /* FlipClockWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EE2333968C95CBC40479 /* FlipClockWidget.swift */; };
 		67968A579E20FE48425DD7D5 /* ControlHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CF7108507DF84C286C2B33A /* ControlHUD.swift */; };
+		76C0408FC09815D94D904994 /* FlipClockCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852B46FD48369824B6BC4F6D /* FlipClockCore.swift */; };
 		80DAF440DDFC45D8D542576B /* PlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */; };
 		920190EDCB58B84837A57151 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6317B59DFBB510104BC500B /* WindowManager.swift */; };
 		9E8DFE746B9D98FBCE5419B3 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33037F37C3706EF3ACB6E27E /* MainView.swift */; };
 		A518DD1A06D13163BFA0F957 /* AppleMusicSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1114AFB3004CEA0BD7660D76 /* AppleMusicSource.swift */; };
+		BCE0C1FB23257A9E51F2B172 /* FlipClockCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852B46FD48369824B6BC4F6D /* FlipClockCore.swift */; };
 		BF760B03D7228B8CF8C490D8 /* ExpandedPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 686A91246C265F552787A620 /* ExpandedPlayerView.swift */; };
 		C47B7CE3F173AC7FCC91BFFD /* MusicSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A69D5F85C5569B732C6023A /* MusicSource.swift */; };
 		C538A3495D8E910BC5432528 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64F1343E7B652E45049C80F1 /* Assets.xcassets */; };
@@ -82,6 +84,7 @@
 		686A91246C265F552787A620 /* ExpandedPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandedPlayerView.swift; sourceTree = "<group>"; };
 		76BE9B6A30D43671C41A2C2E /* GlassTunesWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassTunesWidgets.swift; sourceTree = "<group>"; };
 		772D47972C5ADE530BBA1924 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
+		852B46FD48369824B6BC4F6D /* FlipClockCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipClockCore.swift; sourceTree = "<group>"; };
 		AAD41582AF0AA8506F8F319C /* GlassTunes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GlassTunes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC2588B7ADAF4A615EF92BD6 /* GlassTunes.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassTunes.entitlements; sourceTree = "<group>"; };
 		B0F54389515DD06426FEBB5A /* YouTubeMusicSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeMusicSource.swift; sourceTree = "<group>"; };
@@ -99,6 +102,7 @@
 		1BEA95CFD14297E02CB11264 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				852B46FD48369824B6BC4F6D /* FlipClockCore.swift */,
 				E50E5CD390C8CC993A125581 /* PlaybackIntents.swift */,
 				5F0041DAF775E1380F12BA23 /* SharedStore.swift */,
 				2EAB69AC413C6610B482FC13 /* WidgetViews.swift */,
@@ -282,6 +286,7 @@
 				EA9AB52CCD8B4F6F2484D587 /* Compat.swift in Sources */,
 				67968A579E20FE48425DD7D5 /* ControlHUD.swift in Sources */,
 				BF760B03D7228B8CF8C490D8 /* ExpandedPlayerView.swift in Sources */,
+				BCE0C1FB23257A9E51F2B172 /* FlipClockCore.swift in Sources */,
 				EEC9EC1E4F31DB9E40345DD3 /* GlassTunesApp.swift in Sources */,
 				9E8DFE746B9D98FBCE5419B3 /* MainView.swift in Sources */,
 				457FC5F0C8F0D3D6006362F3 /* MiniPlayerView.swift in Sources */,
@@ -304,6 +309,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				76C0408FC09815D94D904994 /* FlipClockCore.swift in Sources */,
 				597387C91FBED3DB60FCA53F /* FlipClockWidget.swift in Sources */,
 				39C8BBB9FEDC4BD1E130C7CA /* GlassTunesWidgets.swift in Sources */,
 				80DAF440DDFC45D8D542576B /* PlaybackIntents.swift in Sources */,
