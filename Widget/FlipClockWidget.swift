@@ -187,6 +187,12 @@ struct FlipClockIntent: WidgetConfigurationIntent {
     @Parameter(title: "Digit Color", default: .automatic)
     var digitColor: ClockDigitColor
 
+    @Parameter(title: "Custom Digit Color", description: "A hex color like #FF9500. Overrides Digit Color when set.")
+    var digitColorHex: String?
+
+    @Parameter(title: "Custom Tile Color", description: "A hex color like #1C1C2E. Overrides Tile Color when set.")
+    var tileColorHex: String?
+
     @Parameter(title: "Show Day Name", default: true)
     var showWeekday: Bool
 
@@ -213,6 +219,8 @@ struct FlipClockIntent: WidgetConfigurationIntent {
             \.$background
             \.$tileColor
             \.$digitColor
+            \.$digitColorHex
+            \.$tileColorHex
             \.$showWeekday
             \.$showDate
             \.$dateFormat
@@ -238,8 +246,8 @@ struct FlipClockProvider: AppIntentTimelineProvider {
         ClockEntry(date: .now, configuration: configuration)
     }
 
-    /// One entry per minute for 90 minutes; hours and minutes flip at each one.
-    /// Seconds run live between entries (see `LiveSeconds`).
+    /// One entry per minute: WidgetKit prepares every entry ahead of time, so per-second entries
+    /// would keep the widget process busy. Seconds tick with a live timer instead (`SecondsTile`).
     func timeline(for configuration: FlipClockIntent, in context: Context) async -> Timeline<ClockEntry> {
         let now = Date()
         let minute = Calendar.current.dateInterval(of: .minute, for: now)?.start ?? now
@@ -307,12 +315,45 @@ struct ClockFace {
     }
 }
 
-/// A font with tabular digits, plus the width of one digit so live seconds can line up with the tiles.
+/// A font with tabular digits (numbers keep their width), measured so it always fits its card:
+/// fonts differ a lot in how wide and tall their digits are at the same point size.
 struct DigitFont {
     let font: Font
+    /// Width of one digit.
     let advance: CGFloat
+    /// Width of the "0:" that macOS puts in front of a countdown's seconds.
+    let prefixWidth: CGFloat
 
     init(_ choice: ClockFont, weight: ClockWeight, size: CGFloat) {
+        self.init(Self.make(choice, weight: weight, size: size))
+    }
+
+    /// Picks the largest size whose digits fit inside `tile` (one digit per tile).
+    init(_ choice: ClockFont, weight: ClockWeight, fitting tile: CGSize) {
+        var nsFont = Self.make(choice, weight: weight, size: max(4, tile.height * 0.78))
+        // Height: keep the digits inside the card, using the font's own cap height.
+        let capRatio = nsFont.capHeight / nsFont.pointSize
+        if capRatio > 0 {
+            let maxSize = tile.height * 0.72 / capRatio
+            if maxSize < nsFont.pointSize {
+                nsFont = Self.make(choice, weight: weight, size: max(4, maxSize))
+            }
+        }
+        // Width: shrink again if a digit is wider than the card allows.
+        let width = ("0" as NSString).size(withAttributes: [.font: nsFont]).width
+        if width > tile.width * 0.82 {
+            nsFont = Self.make(choice, weight: weight, size: max(4, nsFont.pointSize * tile.width * 0.82 / width))
+        }
+        self.init(nsFont)
+    }
+
+    private init(_ nsFont: NSFont) {
+        font = Font(nsFont as CTFont)
+        advance = ("0" as NSString).size(withAttributes: [.font: nsFont]).width
+        prefixWidth = ("0:" as NSString).size(withAttributes: [.font: nsFont]).width
+    }
+
+    private static func make(_ choice: ClockFont, weight: ClockWeight, size: CGFloat) -> NSFont {
         var nsFont: NSFont
         switch choice {
         case .system:
@@ -337,9 +378,7 @@ struct DigitFont {
                 NSFontDescriptor.FeatureKey.selectorIdentifier: kMonospacedNumbersSelector,
             ]],
         ])
-        nsFont = NSFont(descriptor: tabular, size: size) ?? nsFont
-        font = Font(nsFont as CTFont)
-        advance = ("0" as NSString).size(withAttributes: [.font: nsFont]).width
+        return NSFont(descriptor: tabular, size: size) ?? nsFont
     }
 }
 
@@ -367,7 +406,10 @@ struct FlipClockView: View {
     }
 
     private var style: TileStyle {
-        TileStyle(tile: c.tileColor, digit: c.digitColor.color(on: c.tileColor), background: c.background)
+        TileStyle(tile: c.tileColor,
+                  digit: Color(hex: c.digitColorHex) ?? c.digitColor.color(on: c.tileColor),
+                  background: c.background,
+                  tileOverride: Color(hex: c.tileColorHex))
     }
 
     // Medium: date line, then HH MM (SS) as grouped pairs — like a classic flip clock.
@@ -383,7 +425,7 @@ struct FlipClockView: View {
                     pair(face.hourDigits, slot: "h", width: tileWidth, height: height, gap: inner)
                     pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: inner)
                     if c.showSeconds {
-                        LiveSeconds(minuteStart: face.minuteStart, tileWidth: tileWidth, height: height, gap: inner,
+                        SecondsTile(minuteStart: face.minuteStart, width: tileWidth * 2 + inner, height: height,
                                     font: c.font, weight: c.weight, style: style)
                     }
                 }
@@ -405,8 +447,8 @@ struct FlipClockView: View {
                     pair(face.hourDigits, slot: "h", width: tileWidth, height: height, gap: gap)
                     pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: gap)
                     if c.showSeconds {
-                        LiveSeconds(minuteStart: face.minuteStart, tileWidth: tileWidth * 0.45, height: height * 0.45,
-                                    gap: gap * 0.6, font: c.font, weight: c.weight, style: style)
+                        SecondsTile(minuteStart: face.minuteStart, width: tileWidth * 0.95, height: height * 0.45,
+                                    font: c.font, weight: c.weight, style: style)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -442,8 +484,8 @@ struct FlipClockView: View {
                         pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: inner)
                     }
                     if c.showSeconds {
-                        LiveSeconds(minuteStart: face.minuteStart, tileWidth: secondsHeight * 0.72, height: secondsHeight,
-                                    gap: inner, font: c.font, weight: c.weight, style: style)
+                        SecondsTile(minuteStart: face.minuteStart, width: secondsHeight * 1.5, height: secondsHeight,
+                                    font: c.font, weight: c.weight, style: style)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -452,7 +494,7 @@ struct FlipClockView: View {
     }
 
     private func pair(_ digits: [Character], slot: String, width: CGFloat, height: CGFloat, gap: CGFloat) -> some View {
-        let font = DigitFont(c.font, weight: c.weight, size: height * 0.78).font
+        let font = DigitFont(c.font, weight: c.weight, fitting: CGSize(width: width, height: height)).font
         return HStack(spacing: gap) {
             ForEach(0..<2, id: \.self) { index in
                 FlipTile(digit: digits[index], slot: "\(slot)\(index)", font: font, style: style)
@@ -479,6 +521,24 @@ struct TileStyle {
     var tile: ClockColor
     var digit: Color
     var background: ClockBackground
+    /// Set when the user typed a hex color for the tiles.
+    var tileOverride: Color?
+}
+
+extension Color {
+    /// "#FF9500", "FF9500" or "#FF9500CC" → a color; anything else → nil.
+    init?(hex: String?) {
+        guard var text = hex?.trimmingCharacters(in: .whitespaces).uppercased(), !text.isEmpty else { return nil }
+        if text.hasPrefix("#") { text.removeFirst() }
+        guard [6, 8].contains(text.count), let value = UInt64(text, radix: 16) else { return nil }
+        let hasAlpha = text.count == 8
+        let shift = hasAlpha ? 8 : 0
+        self.init(.sRGB,
+                  red: Double((value >> (16 + shift)) & 0xFF) / 255,
+                  green: Double((value >> (8 + shift)) & 0xFF) / 255,
+                  blue: Double((value >> shift) & 0xFF) / 255,
+                  opacity: hasAlpha ? Double(value & 0xFF) / 255 : 1)
+    }
 }
 
 /// The card behind a digit: rounded, split by a hairline seam, top half catching a little light.
@@ -502,6 +562,9 @@ struct TileFace: View {
     }
 
     private var fill: AnyShapeStyle {
+        if let custom = style.tileOverride {
+            return AnyShapeStyle(LinearGradient(colors: [custom.opacity(0.92), custom], startPoint: .top, endPoint: .bottom))
+        }
         if style.tile == .glass {
             return AnyShapeStyle(Color.white.opacity(style.background == .clear ? 0.1 : 0.08))
         }
@@ -545,45 +608,37 @@ struct FlipTile: View {
     }
 }
 
-/// Seconds that tick every second without reloading the widget: a live timer ("0:SS") is laid
-/// across two tiles with its digits spaced to line up with them; everything left of "SS" is clipped.
-struct LiveSeconds: View {
+/// Seconds without redrawing the widget: macOS's live countdown reads "0:SS". The text is pinned
+/// by its right edge — which only depends on the last digit — and shifted so the two seconds digits
+/// sit centered in the card; everything to their left is clipped away.
+struct SecondsTile: View {
     let minuteStart: Date
-    let tileWidth: CGFloat
+    let width: CGFloat
     let height: CGFloat
-    let gap: CGFloat
     let font: ClockFont
     let weight: ClockWeight
     let style: TileStyle
 
     var body: some View {
-        let digitFont = DigitFont(font, weight: weight, size: height * 0.78)
-        let pairWidth = tileWidth * 2 + gap
-        let kerning = tileWidth + gap - digitFont.advance
-        // Right edge so the last digit is centered on the second tile (kerning also trails it).
-        let frameWidth = tileWidth * 1.5 + gap + kerning + digitFont.advance / 2
-        ZStack(alignment: .leading) {
-            HStack(spacing: gap) {
-                TileFace(style: style).frame(width: tileWidth, height: height)
-                TileFace(style: style).frame(width: tileWidth, height: height)
-            }
+        let digitFont = DigitFont(font, weight: weight, fitting: CGSize(width: width / 2, height: height))
+        ZStack {
+            TileFace(style: style)
+            Seam(style: style)
+        }
+        .frame(width: width, height: height)
+        .overlay {
+            // A window exactly two digits wide: the text overflows it to the left and is clipped,
+            // so only the seconds show, centered in the card.
             Text(timerInterval: minuteStart...minuteStart.addingTimeInterval(60), countsDown: false)
                 .font(digitFont.font)
-                .kerning(kerning)
                 .foregroundStyle(style.digit)
                 .lineLimit(1)
-                // Keep the full "0:SS" width: it must overflow and be clipped, never truncated with "…".
-                .fixedSize(horizontal: true, vertical: false)
-                .frame(width: frameWidth, height: height, alignment: .trailing)
-                .frame(width: pairWidth, alignment: .leading)
+                .fixedSize()
+                .frame(width: digitFont.advance * 2, height: height, alignment: .trailing)
                 .clipped()
                 .widgetAccentable()
-            HStack(spacing: gap) {
-                Seam(style: style).frame(width: tileWidth, height: height)
-                Seam(style: style).frame(width: tileWidth, height: height)
-            }
         }
-        .frame(width: pairWidth, height: height)
+        .clipShape(RoundedRectangle(cornerRadius: min(width, height) * 0.1, style: .continuous))
     }
 }
 
@@ -597,15 +652,16 @@ struct ClockBackdrop: View {
         case .frosted:
             ZStack {
                 Color(red: 0.14, green: 0.14, blue: 0.19)
-                if configuration.tileColor != .glass {
-                    RadialGradient(colors: [configuration.tileColor.base.opacity(0.3), .clear],
+                if let tint = Color(hex: configuration.tileColorHex) ?? (configuration.tileColor == .glass ? nil : configuration.tileColor.base) {
+                    RadialGradient(colors: [tint.opacity(0.3), .clear],
                                    center: .topLeading, startRadius: 0, endRadius: 300)
                 }
                 LinearGradient(stops: [.init(color: .white.opacity(0.1), location: 0), .init(color: .clear, location: 0.5)],
                                startPoint: .topLeading, endPoint: .bottomTrailing)
             }
         case .tinted:
-            let tint = configuration.tileColor == .glass ? Color(red: 0.35, green: 0.33, blue: 0.62) : configuration.tileColor.base
+            let tint = Color(hex: configuration.tileColorHex)
+                ?? (configuration.tileColor == .glass ? Color(red: 0.35, green: 0.33, blue: 0.62) : configuration.tileColor.base)
             ZStack {
                 LinearGradient(colors: [tint, tint.opacity(0.55), .black.opacity(0.85)],
                                startPoint: .topLeading, endPoint: .bottomTrailing)
