@@ -22,6 +22,7 @@ One window with native macOS controls, the system font and your accent color:
 
 - **Now Playing (left):** animated artwork, a seek bar, controls, shuffle/repeat, volume, the AutoMix status, and your recent songs.
 - **Settings (right):** where music comes from, the Sonos room, a widget preview for each glass style and size, and General options.
+- **Recently Played:** click a cover to play that song again (Apple Music, Spotify, and Sonos when the song came from its own queue).
 - **Up Next:** the list button shows the queue. That's the current album or playlist in Apple Music, the Sonos queue, or YouTube Music's Up Next. Click a song to play it. Spotify doesn't share its queue.
 - **Widget sliders:** clicking a widget's scrubber or volume bar sets it and pops up a real glass slider at the pointer, so you can keep dragging. Widgets themselves can't be dragged.
 - **Show Sonos in Control Center (General):** publishes Sonos playback to macOS Now Playing, with working play/pause and skip. macOS decides where, and whether, it appears on the lock screen.
@@ -32,6 +33,26 @@ One window with native macOS controls, the system font and your accent color:
 - **Playback menu:** ⌥Space play/pause, ⌘→ / ⌘← to skip, ⇧⌘S shuffle, ⇧⌘R repeat, ⇧⌘P mini player, ⇧⌘F full player.
 
 It uses about 1% CPU and about 110 MB of memory when idle. Only the browser and Sonos sources are checked every 3 seconds; Music and Spotify announce their own changes. Closed player windows free their video and views.
+
+## Widgets
+
+Right-click the desktop → **Edit Widgets** → search **GlassTunes**.
+
+| Widget | Sizes | What it shows |
+| --- | --- | --- |
+| Now Playing | Small | iPhone Control Center tile: artwork, source app, title, controls |
+| Player | Medium | iPhone Lock Screen player: artwork, source app, scrubber, controls |
+| Music Deck | Large | iPhone Control Center player: big artwork, scrubber, controls, AutoMix |
+| Flip Clock | Small, Medium, Large | Flipping hours and minutes, live seconds, day and date |
+
+Right-click a widget → **Edit Widget** to customize it.
+
+- **Music widgets:** Glass style — Artwork Tint, Frosted or Clear.
+- **Flip Clock:** 12/24-hour or system, seconds, font (13 choices) and weight, tile and digit colors, Frosted/Clear/Color background, date format, day name, AM/PM and time zone.
+- **Clicking:** a music widget opens the mini player; the clock opens macOS's Clock app.
+- Clicking a widget's scrubber or volume bar sets it and pops up a draggable slider.
+
+For fully see-through widgets, set **System Settings → Appearance → Icon & widget style** to **Clear**; macOS draws its own panel behind widgets otherwise.
 
 ## Sources
 
