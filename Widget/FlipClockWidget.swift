@@ -246,13 +246,24 @@ struct FlipClockProvider: AppIntentTimelineProvider {
         ClockEntry(date: .now, configuration: configuration)
     }
 
-    /// One entry per minute: WidgetKit prepares every entry ahead of time, so per-second entries
-    /// would keep the widget process busy. Seconds tick with a live timer instead (`SecondsTile`).
+    /// WidgetKit draws prepared frames, so showing seconds needs one frame per second. Each batch
+    /// runs past the moment the next one is requested, so no second is ever skipped in between.
     func timeline(for configuration: FlipClockIntent, in context: Context) async -> Timeline<ClockEntry> {
         let now = Date()
-        let minute = Calendar.current.dateInterval(of: .minute, for: now)?.start ?? now
-        let entries = (0..<90).map { ClockEntry(date: minute.addingTimeInterval(Double($0) * 60), configuration: configuration) }
-        return Timeline(entries: entries, policy: .atEnd)
+        guard configuration.showSeconds else {
+            let minute = Calendar.current.dateInterval(of: .minute, for: now)?.start ?? now
+            let entries = (0..<90).map {
+                ClockEntry(date: minute.addingTimeInterval(Double($0) * 60), configuration: configuration)
+            }
+            return Timeline(entries: entries, policy: .atEnd)
+        }
+        let second = Calendar.current.dateInterval(of: .second, for: now)?.start ?? now
+        // 75 seconds of frames, with the next batch asked for after 60: the 15-second overlap
+        // covers however long that request takes.
+        let entries = (0..<75).map {
+            ClockEntry(date: second.addingTimeInterval(Double($0)), configuration: configuration)
+        }
+        return Timeline(entries: entries, policy: .after(second.addingTimeInterval(60)))
     }
 }
 
@@ -417,22 +428,15 @@ struct FlipClockView: View {
         VStack(spacing: 10) {
             headerLine(face.header, size: 15)
             GeometryReader { geo in
-                let inner: CGFloat = 5, outer: CGFloat = c.showSeconds ? 16 : 26
+                let inner: CGFloat = 5, outer: CGFloat = c.showSeconds ? 18 : 26
                 let height = geo.size.height
-                // The seconds sit smaller than the hours and minutes, so they stay the main event.
-                let secondsHeight = height * 0.62
-                let secondsWidth = c.showSeconds
-                    ? SecondsTile.width(for: DigitFont(c.font, weight: c.weight,
-                                                       fitting: CGSize(width: secondsHeight * 0.62, height: secondsHeight)))
-                    : 0
                 let groups: CGFloat = c.showSeconds ? 3 : 2
-                let tileWidth = (geo.size.width - 2 * inner - (groups - 1) * outer - secondsWidth) / 4
+                let tileWidth = (geo.size.width - groups * inner - (groups - 1) * outer) / (groups * 2)
                 HStack(spacing: outer) {
                     pair(face.hourDigits, slot: "h", width: tileWidth, height: height, gap: inner)
                     pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: inner)
                     if c.showSeconds {
-                        SecondsTile(minuteStart: face.minuteStart, height: secondsHeight,
-                                    font: c.font, weight: c.weight, style: style)
+                        pair(face.secondDigits, slot: "s", width: tileWidth, height: height, gap: inner)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -453,8 +457,7 @@ struct FlipClockView: View {
                     pair(face.hourDigits, slot: "h", width: tileWidth, height: height, gap: gap)
                     pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: gap)
                     if c.showSeconds {
-                        SecondsTile(minuteStart: face.minuteStart, height: height * 0.45,
-                                    font: c.font, weight: c.weight, style: style)
+                        pair(face.secondDigits, slot: "s", width: tileWidth * 0.55, height: height * 0.5, gap: gap)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -490,8 +493,7 @@ struct FlipClockView: View {
                         pair(face.minuteDigits, slot: "m", width: tileWidth, height: height, gap: inner)
                     }
                     if c.showSeconds {
-                        SecondsTile(minuteStart: face.minuteStart, height: secondsHeight,
-                                    font: c.font, weight: c.weight, style: style)
+                        pair(face.secondDigits, slot: "s", width: secondsHeight * 0.75, height: secondsHeight, gap: inner)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -611,34 +613,6 @@ struct FlipTile: View {
                 .transition(.push(from: .top))
             Seam(style: style)
         }
-    }
-}
-
-/// Seconds card. macOS updates its own countdown text inside a widget, and that text reads "0:SS".
-/// It must be left completely alone — clipping, resizing or recoloring it with a gradient makes
-/// WidgetKit stop updating it — so the card is simply made wide enough to hold it.
-struct SecondsTile: View {
-    let minuteStart: Date
-    let height: CGFloat
-    let font: ClockFont
-    let weight: ClockWeight
-    let style: TileStyle
-
-    /// Width this card needs for the whole "0:SS".
-    static func width(for font: DigitFont) -> CGFloat { font.prefixWidth + font.advance * 2 + 10 }
-
-    var body: some View {
-        let digitFont = DigitFont(font, weight: weight, fitting: CGSize(width: height * 0.62, height: height))
-        let width = Self.width(for: digitFont)
-        ZStack {
-            TileFace(style: style)
-            Text(timerInterval: minuteStart...minuteStart.addingTimeInterval(60), countsDown: false)
-                .font(digitFont.font)
-                .foregroundStyle(style.digit)
-            Seam(style: style)
-        }
-        .frame(width: width, height: height)
-        .clipShape(RoundedRectangle(cornerRadius: min(width, height) * 0.1, style: .continuous))
     }
 }
 
