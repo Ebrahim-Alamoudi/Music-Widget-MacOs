@@ -270,6 +270,19 @@ struct FlipClockProvider: AppIntentTimelineProvider {
 // MARK: - Time and fonts
 
 struct ClockFace {
+    /// Formatters are expensive to build, and with seconds there's one frame per second.
+    private static let formatterCache = NSCache<NSString, DateFormatter>()
+
+    static func formatter(for zone: TimeZone) -> DateFormatter {
+        let key = zone.identifier as NSString
+        if let cached = formatterCache.object(forKey: key) { return cached }
+        let formatter = DateFormatter()
+        formatter.timeZone = zone
+        formatter.locale = .current
+        formatterCache.setObject(formatter, forKey: key)
+        return formatter
+    }
+
     let hourDigits: [Character]
     let minuteDigits: [Character]
     let secondDigits: [Character]
@@ -301,9 +314,7 @@ struct ClockFace {
         secondDigits = Array(String(format: "%02d", parts.second ?? 0))
         minuteStart = date.addingTimeInterval(-Double(parts.second ?? 0))
 
-        let formatter = DateFormatter()
-        formatter.timeZone = zone
-        formatter.locale = .current
+        let formatter = ClockFace.formatter(for: zone)
         if uses12Hour && c.showPeriod {
             formatter.dateFormat = "a"
             period = formatter.string(from: date)
@@ -364,7 +375,11 @@ struct DigitFont {
         prefixWidth = ("0:" as NSString).size(withAttributes: [.font: nsFont]).width
     }
 
+    private static let fontCache = NSCache<NSString, NSFont>()
+
     private static func make(_ choice: ClockFont, weight: ClockWeight, size: CGFloat) -> NSFont {
+        let key = "\(choice.rawValue)-\(weight.rawValue)-\(Int(size.rounded()))" as NSString
+        if let cached = fontCache.object(forKey: key) { return cached }
         var nsFont: NSFont
         switch choice {
         case .system:
@@ -389,7 +404,9 @@ struct DigitFont {
                 NSFontDescriptor.FeatureKey.selectorIdentifier: kMonospacedNumbersSelector,
             ]],
         ])
-        return NSFont(descriptor: tabular, size: size) ?? nsFont
+        let result = NSFont(descriptor: tabular, size: size) ?? nsFont
+        fontCache.setObject(result, forKey: key)
+        return result
     }
 }
 
